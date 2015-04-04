@@ -34,6 +34,10 @@ public class TouchInput : MonoBehaviour {
 			pointerX = Input.mousePosition.x;
 			pointerY = Input.mousePosition.y;
 			return true;
+		} else if (Input.GetTouch (0).tapCount == 1) {
+			pointerX = Input.GetTouch (0).position.x;
+			pointerY = Input.GetTouch (0).position.y;
+			return true;
 		}
 
 		return false;

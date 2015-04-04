@@ -16,6 +16,7 @@ public class TurnManager : MonoBehaviour {
 	public float radius = .17f;
 	public float degreeDelta = 45f;
 	public float radiusDeltaRatio = .5f;
+	public Vector3 offset = Vector3.zero;
 	Vector3 towerCenter = Vector3.zero;
 
 	float pitch =45f,
@@ -70,8 +71,9 @@ public class TurnManager : MonoBehaviour {
 		transform.rotation = Quaternion.Euler (easedRot.x, easedRot.y, easedRot.z);
 
 
-		Vector3 target = towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
+		Vector3 target = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 		transform.position = Vector3.Lerp (transform.position, target, .1f);
+
 	}
 
 

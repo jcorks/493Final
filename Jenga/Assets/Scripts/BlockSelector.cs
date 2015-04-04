@@ -6,13 +6,28 @@ using System.Collections.Generic;
 
 public class BlockSelector : MonoBehaviour {
 
+	static bool selEnabled = true;
+
+
+	static public void EnableSelection(bool doIt) {
+		selEnabled = doIt;
+	}
+
+
+
 	// Use this for initialization
 	void Start () {
 
 	}
-	
+
+
+
+
+
 	// Update is called once per frame
 	void Update () {
+		if (!selEnabled)
+			return;
 		if (TouchInput.tap ()) {
 			RaycastHit hitInfo;
 			Ray hit = Camera.main.ScreenPointToRay(new Vector3(TouchInput.tapX(), TouchInput.tapY (), 0));

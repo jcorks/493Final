@@ -7,7 +7,8 @@ public class TurnManager : MonoBehaviour {
 	{
 		ChoosePiece,
 		DragPiece,
-		ReplacePiece
+		ReplacePiece,
+		FreeMode
 
 	};
 
@@ -43,6 +44,8 @@ public class TurnManager : MonoBehaviour {
 	void Update () {
 		if (phase == TurnPhase.ChoosePiece)
 			ChoosePieceUpdate ();
+		else if (phase == TurnPhase.DragPiece)
+			DragPieceUpdate ();
 
 
 	}
@@ -97,4 +100,13 @@ public class TurnManager : MonoBehaviour {
 		}
 	}
 
+
+	void DragPieceUpdate() {
+
+	}
+
+	// Takes the currently selected piece and prepares it for movement.
+	public void FinalizePiece() {
+		Destroy(Selectable.GetSelection ());
+	}
 }

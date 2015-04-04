@@ -27,6 +27,12 @@ public class Selectable : MonoBehaviour {
 	}
 
 
+	public static GameObject GetSelection() {
+		return selectedRef;
+	}
+
+
+
 
 
 	void Awake() {

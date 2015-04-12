@@ -6,15 +6,26 @@ public class TouchInput : MonoBehaviour {
 	static Vector2 lastpos;
 	static Vector2 thispos;
 
-	float threshold = 100f;
-	float dragMinimumTimeSeconds = .07f;	
+	float threshold = .15f;
 
 	static bool swipeLeftState = false;
 	static bool swipeRightState = false;
 	static bool swipeDownState = false;
 	static bool swipeUpState = false;
 	float time = 0f;
-	
+
+
+
+	static Touch touchInstance;
+	static bool touchEnabled = false;	
+	static bool touchUpdated = false;
+	static bool swiping = false;
+
+	void Start() {
+		touchEnabled = Input.touchSupported;
+	}
+
+
 	public static bool swipeLeft() {
 		return Input.GetKeyDown (KeyCode.A) || swipeLeftState;
 	}
@@ -41,14 +52,14 @@ public class TouchInput : MonoBehaviour {
 	}
 	
 	public static bool tap() {
+		if (swiping)
+			return false;
+
+
 		if (Input.GetMouseButtonDown (0)) {
-			pointerX = Input.mousePosition.x;
-			pointerY = Input.mousePosition.y;
 			return true;
 		} else if (Input.touchSupported &&    
-		           Input.GetTouch (0).tapCount == 1) {
-			pointerX = Input.GetTouch (0).position.x;
-			pointerY = Input.GetTouch (0).position.y;
+		           touchInstance.tapCount == 1) {
 			return true;
 		}
 
@@ -56,11 +67,15 @@ public class TouchInput : MonoBehaviour {
 	}
 	
 	public static float tapX() {
-		return pointerX;
+		return getTouchPos().x;
 	}
 	
 	public static float tapY() {
-		return pointerY;
+		return getTouchPos ().y;
+	}
+
+	public static Vector2 tapPosition() {
+		return getTouchPos();
 	}
 
 
@@ -74,33 +89,75 @@ public class TouchInput : MonoBehaviour {
 		swipeUpState = false;
 		swipeDownState = false;
 		time += Time.deltaTime;
-		if (Input.touchSupported && Input.GetTouch (0).tapCount > 0) {
-			Touch curTouch = Input.GetTouch (0);
+		UpdateTouch ();
 
 
-			if (curTouch.phase == TouchPhase.Began) {
-				lastpos = curTouch.position;
-				time = 0f;
-			} else if (curTouch.phase == TouchPhase.Moved) {
-				thispos = curTouch.position;
+		if (isTouchBegin()) {
+			lastpos = getTouchPos();
+			time = 0f;
+		} else if (isTouchEnd ()) {
+			thispos = getTouchPos();
+			Vector2 delta = thispos - lastpos;
 
-			} else if (curTouch.phase == TouchPhase.Ended) {
-				if (time < dragMinimumTimeSeconds) return;
 
-				Vector2 delta = thispos - lastpos;
 
-				if (delta.x < -threshold) {
-					swipeLeftState = true; 
-				} else if (delta.x > threshold) {
-					swipeRightState = true;
-				}
 
-				if (delta.y < -threshold) {
-					swipeUpState = true;
-				} else if (delta.y > threshold) {
-					swipeDownState = true;
-				}
+			if (delta.x < -threshold * Screen.width) {
+				swipeLeftState = true; 
+			} else if (delta.x > threshold * Screen.width) {
+				swipeRightState = true;
 			}
+
+				
+			if (delta.y > threshold * Screen.height) {
+				swipeUpState = true;
+			} else if (delta.y < -threshold * Screen.height) {
+				swipeDownState = true;
+				
+			}
+		}
+	} 
+	void UpdateTouch() {
+		if (touchEnabled) {
+			swiping = (touchInstance.phase == TouchPhase.Moved);
+		} else {
+		
+		}
+	
+
+
+		if (touchEnabled && Input.GetTouch (0).tapCount > 0) {
+			touchInstance = Input.GetTouch (0);
+
+
 		} 
+
+	
 	}
+
+	bool isTouchBegin() {
+		if (touchEnabled) {
+			return touchInstance.phase == TouchPhase.Began;
+		} 
+		return Input.GetMouseButtonDown (0);
+	}
+
+
+	bool isTouchEnd() {
+		if (touchEnabled) {
+			return touchInstance.phase == TouchPhase.Ended;
+		} 
+		return Input.GetMouseButtonUp (0);
+	}
+
+
+	static Vector2 getTouchPos() {
+		if (touchEnabled) {
+			return touchInstance.position;
+		}
+		return Input.mousePosition;
+	}
+
+
+
 }

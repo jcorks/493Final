@@ -55,6 +55,8 @@ public class TurnManager : MonoBehaviour {
 	void FixedUpdate() {
 
 		// First bind values to 0 - 360 to prevent false lerping
+
+
 		if (roll >= 360f + transform.eulerAngles.x) roll -=360f;
 		if (pitch >= 360f + transform.eulerAngles.y) pitch -=360f;
 		if (yaw >= 360f + transform.eulerAngles.z) yaw -=360f;
@@ -83,16 +85,23 @@ public class TurnManager : MonoBehaviour {
 	
 	void ChoosePieceUpdate() {
 		if (TouchInput.swipeLeft())
-			pitch += degreeDelta;
-		
-		if (TouchInput.swipeRight ())
 			pitch -= degreeDelta;
 		
-		if (TouchInput.swipeUp ())
-			roll += degreeDelta;
+		if (TouchInput.swipeRight ()) 
+			pitch += degreeDelta;
 		
-		if (TouchInput.swipeDown ())
-			roll -= degreeDelta;
+		
+		if (TouchInput.swipeUp ()) {
+			if (roll == 270) return;
+		    roll -= degreeDelta;
+
+		}
+		
+		if (TouchInput.swipeDown ()) {
+			if (roll == 90) return;
+			roll += degreeDelta;
+
+		}
 		
 		if (TouchInput.pinchZoomOut()) {
 			radius += radius*radiusDeltaRatio;

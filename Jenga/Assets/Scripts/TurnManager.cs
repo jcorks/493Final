@@ -41,7 +41,7 @@ public class TurnManager : MonoBehaviour {
 	GameObject gameButton;
 
 	float dragTimer = 0f;
-
+	public Material DragMaterial;
 
 	TurnPhase phase = TurnPhase.ChoosePiece;
 
@@ -116,6 +116,7 @@ public class TurnManager : MonoBehaviour {
 			Selectable.Thaw ();
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
+			Selectable.Deselect();
 		}
 
 		if (TouchInput.swipeLeft())
@@ -170,6 +171,7 @@ public class TurnManager : MonoBehaviour {
 
 
 		if (dragTimer > 2f) {
+			piece.GetComponent<MeshRenderer>().material = DragMaterial;
 			UserDragPiece ();
 		}
 	}

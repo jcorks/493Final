@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class TurnManager : MonoBehaviour {
 
@@ -36,11 +37,17 @@ public class TurnManager : MonoBehaviour {
 
 
 	bool hasStartedDragUpdate = false;
+	bool hasStartedChooseUpdate = false;
+	GameObject gameButton;
+
+	float dragTimer = 0f;
+
 
 	TurnPhase phase = TurnPhase.ChoosePiece;
 
 	// Use this for initialization
 	void Start () {
+		gameButton = GameObject.FindObjectOfType<Button> ().gameObject;
 		GameObject tower = GameObject.FindGameObjectWithTag ("Tower");
 		if (tower == null) {
 			Debug.Log ("WARNING! TurnManager could not find the tower prefab to center itself!");
@@ -96,12 +103,21 @@ public class TurnManager : MonoBehaviour {
 
 	
 	void InitialPhaseUpdate() {
-		hasStartedDragUpdate = false;
-		phase = TurnPhase.ChoosePiece;
+		changePhase(TurnPhase.ChoosePiece);
 	}
 	
 	
 	void ChoosePieceUpdate() {
+		if (!hasStartedChooseUpdate) {
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Pick Piece";
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(FinalizePiece);
+			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			Selectable.Thaw ();
+			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
+			hasStartedChooseUpdate = true;
+		}
+
 		if (TouchInput.swipeLeft())
 			pitch -= degreeDelta;
 		
@@ -139,22 +155,42 @@ public class TurnManager : MonoBehaviour {
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
 			hasStartedDragUpdate = true;
 			Selectable.Freeze ();
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Back";
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(UndoPiece);
+			gameButton.GetComponent<Button>().onClick = buttonCallback; 
+			dragTimer = 0f;
 		}
+		dragTimer += Time.deltaTime;
+
 		Vector3 pieceRot = selectedOriginalRotation;
 		targetPos = selectedOriginalPosition + 
 			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.4f*radius);
 		transform.LookAt (selectedOriginalPosition);
 
 
-		UserDragPiece ();
-
+		if (dragTimer > 2f) {
+			UserDragPiece ();
+		}
 	}
 
 	// Takes the currently selected piece and prepares it for movement.
 	public void FinalizePiece() {
-		phase = TurnPhase.DragPiece;
+		changePhase(TurnPhase.DragPiece);
 		//Destroy(Selectable.GetSelection ());
 	}
+
+	public void UndoPiece() {
+		changePhase ( TurnPhase.ChoosePiece);
+	}
+
+
+	void changePhase(TurnPhase p) {
+		hasStartedDragUpdate = false;
+		hasStartedChooseUpdate = false;
+		phase = p;
+	}
+
 
 
 	// Put logic here for dragging the piece

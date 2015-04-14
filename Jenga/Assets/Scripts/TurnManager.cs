@@ -5,6 +5,7 @@ public class TurnManager : MonoBehaviour {
 
 	public enum TurnPhase
 	{
+		InitialPhase,
 		ChoosePiece,
 		DragPiece,
 		ReplacePiece,
@@ -29,6 +30,13 @@ public class TurnManager : MonoBehaviour {
 	Vector3 targetPos;
 	Vector3 targetRot;
 
+
+	Vector3 selectedOriginalPosition;
+	Vector3 selectedOriginalRotation;
+
+
+	bool hasStartedDragUpdate = false;
+
 	TurnPhase phase = TurnPhase.ChoosePiece;
 
 	// Use this for initialization
@@ -43,10 +51,17 @@ public class TurnManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (phase == TurnPhase.ChoosePiece)
+		switch (phase) {
+		case TurnPhase.InitialPhase:
+			InitialPhaseUpdate();
+			break;
+		case TurnPhase.ChoosePiece:
 			ChoosePieceUpdate ();
-		else if (phase == TurnPhase.DragPiece)
+			break;
+		case TurnPhase.DragPiece:
 			DragPieceUpdate ();
+			break;
+		}
 
 
 	}
@@ -73,14 +88,17 @@ public class TurnManager : MonoBehaviour {
 		transform.rotation = Quaternion.Euler (easedRot.x, easedRot.y, easedRot.z);
 
 
-		Vector3 target = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
-		transform.position = Vector3.Lerp (transform.position, target, .1f);
+
+		transform.position = Vector3.Lerp (transform.position, targetPos, .1f);
 
 	}
 
 
 	
-
+	void InitialPhaseUpdate() {
+		hasStartedDragUpdate = false;
+		phase = TurnPhase.ChoosePiece;
+	}
 	
 	
 	void ChoosePieceUpdate() {
@@ -109,15 +127,38 @@ public class TurnManager : MonoBehaviour {
 		if (TouchInput.pinchZoomIn()) {
 			radius -= radius*radiusDeltaRatio;
 		}
+
+		targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 	}
 
 
 	void DragPieceUpdate() {
+		GameObject piece = Selectable.GetSelection();
+		if (!hasStartedDragUpdate) {
+			selectedOriginalPosition = piece.transform.position;
+			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
+			hasStartedDragUpdate = true;
+			Selectable.Freeze ();
+		}
+		Vector3 pieceRot = selectedOriginalRotation;
+		targetPos = selectedOriginalPosition + 
+			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.4f*radius);
+		transform.LookAt (selectedOriginalPosition);
+
+
+		UserDragPiece ();
 
 	}
 
 	// Takes the currently selected piece and prepares it for movement.
 	public void FinalizePiece() {
-		Destroy(Selectable.GetSelection ());
+		phase = TurnPhase.DragPiece;
+		//Destroy(Selectable.GetSelection ());
+	}
+
+
+	// Put logic here for dragging the piece
+	void UserDragPiece() {
+
 	}
 }

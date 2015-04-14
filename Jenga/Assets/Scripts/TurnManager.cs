@@ -160,5 +160,18 @@ public class TurnManager : MonoBehaviour {
 	// Put logic here for dragging the piece
 	void UserDragPiece() {
 
+		// Get the z coordinate of the piece you wanna drag
+		GameObject piece = Selectable.GetSelection();
+		var original_z = piece.transform.position.z;
+
+		Vector3 mousePos2D = Input.mousePosition;
+		mousePos2D.z = original_z;
+		//mousePos2D.z = -Camera.main.transform.position.z;
+		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
+		Vector3 pos = this.transform.position;
+		pos.x = mousePos3D.x;
+		pos.y = mousePos3D.y;
+		pos.z = original_z;
+		piece.transform.position = pos;
 	}
 }

@@ -12,6 +12,7 @@ public class TouchInput : MonoBehaviour {
 	static bool swipeRightState = false;
 	static bool swipeDownState = false;
 	static bool swipeUpState = false;
+	static int pinchZoomState = 0;
 	float time = 0f;
 
 
@@ -44,11 +45,11 @@ public class TouchInput : MonoBehaviour {
 	}
 	
 	public static bool pinchZoomIn() {
-		return Input.GetKeyDown (KeyCode.Q);
+		return Input.GetKeyDown (KeyCode.Q) || pinchZoomState == -1;
 	}
 	
 	public static bool pinchZoomOut() {
-		return Input.GetKeyDown (KeyCode.E);
+		return Input.GetKeyDown (KeyCode.E) || pinchZoomState == 1;
 	}
 	
 	public static bool tap() {
@@ -116,6 +117,9 @@ public class TouchInput : MonoBehaviour {
 				
 			}
 		}
+
+
+
 	} 
 	void UpdateTouch() {
 		if (touchEnabled) {
@@ -129,8 +133,25 @@ public class TouchInput : MonoBehaviour {
 		if (touchEnabled && Input.GetTouch (0).tapCount > 0) {
 			touchInstance = Input.GetTouch (0);
 
+			if (Input.touchCount == 2) {
 
+				Touch t0 = Input.GetTouch (0),
+				      t1 = Input.GetTouch (1);
+				Vector2 oldDelta = (t0.position - t0.deltaPosition) - 
+					               (t1.position - t1.deltaPosition);
+				Vector2 curDelta = t1.position - t0.position;
+				if (curDelta.magnitude < oldDelta.magnitude - 20) {
+					pinchZoomState = -1; 
+				} else if (curDelta.magnitude < oldDelta.magnitude + 20) {
+					pinchZoomState = 1;
+				} else {
+					pinchZoomState = 0;
+				}
+			}
 		} 
+
+
+
 
 	
 	}

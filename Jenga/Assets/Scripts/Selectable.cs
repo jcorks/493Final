@@ -8,11 +8,14 @@ public class Selectable : MonoBehaviour {
 	static GameObject selectedRef = null;
 	Material actualMat = null;
 	public Material selectedMat;
+	static bool enableSelection = true;
 	MeshRenderer meshRenderer = null;
 
 
 	// Selects the object and deselects anything else currently selected
 	public void Select() {
+		if (!enableSelection)
+			return;
 		if (selectedRef) {
 			selectedRef.GetComponent<Selectable>().meshRenderer.material = 
 		    selectedRef.GetComponent<Selectable>().actualMat;
@@ -31,6 +34,14 @@ public class Selectable : MonoBehaviour {
 		return selectedRef;
 	}
 
+
+	public static void Freeze() {
+		enableSelection = false;
+	}
+
+	public static void Thaw() {
+		enableSelection = true;
+	}
 
 
 

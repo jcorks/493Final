@@ -39,6 +39,7 @@ public class TurnManager : MonoBehaviour {
 	
 	bool hasStartedDragUpdate = false;
 	bool hasStartedChooseUpdate = false;
+	bool hasStartedDragging = false;
 	GameObject gameButton;
 	
 	float dragTimer = 0f;
@@ -47,8 +48,6 @@ public class TurnManager : MonoBehaviour {
 	TurnPhase phase = TurnPhase.ChoosePiece;
 	Vector3 dragPos;
 
-	Vector3 lastPointer;
-	Vector3 pointerDelta;
 
 	// Use this for initialization
 	void Start () {
@@ -63,9 +62,14 @@ public class TurnManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		pointerDelta = Input.mousePosition - lastPointer;
-		lastPointer = Input.mousePosition;
 
+
+
+
+
+		//lastPointer = Input.mousePosition;
+
+		
 		switch (phase) {
 		case TurnPhase.InitialPhase:
 			InitialPhaseUpdate();
@@ -163,12 +167,7 @@ public class TurnManager : MonoBehaviour {
 			selectedOriginalPosition = piece.transform.position;
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
 
-			var dir = piece.GetComponent<JengaBlockScript> ().direction;
-			if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
-				original_depth = piece.transform.position.z;
-			} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
-				original_depth = piece.transform.position.x;
-			}
+
 
 			hasStartedDragUpdate = true;
 			Selectable.Freeze ();
@@ -189,13 +188,24 @@ public class TurnManager : MonoBehaviour {
 		transform.LookAt (selectedOriginalPosition);
 		
 		
-		if (dragTimer > 2f) {
-			if (dragTimer < 2.3f) {
-				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+		if (dragTimer > 1.4f) {
+			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+			if (!hasStartedDragging) {
+				//dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+				dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+				                      Camera.main.WorldToScreenPoint(piece.transform.position).y);
+				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+
+				if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
+					original_depth = piece.transform.position.z;
+				} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
+					original_depth = piece.transform.position.x;
+				}
+				hasStartedDragging = true;
 			}
 
-			var dir = piece.GetComponent<JengaBlockScript> ().direction;
-			Debug.DrawLine(Vector3.zero, dragPos);
+
+			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
 			if (TouchInput.tap ()) {
 				if (dir == JengaBlockScript.Direction.FacingWest)
@@ -203,8 +213,11 @@ public class TurnManager : MonoBehaviour {
 				else 
 					dragPos += TouchInput.tapDelta();
 
-			piece.GetComponent<MeshRenderer>().material = DragMaterial;
-			UserDragPiece ();
+
+				UserDragPiece ();
+			} else {
+
+			}
 		}
 	}
 	
@@ -222,7 +235,8 @@ public class TurnManager : MonoBehaviour {
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
-		lastPointer = Vector3.zero;
+		hasStartedDragging = false;
+
 
 		phase = p;
 	}
@@ -278,15 +292,5 @@ public class TurnManager : MonoBehaviour {
 		// North face works with the default settings
 		
 		//piece.GetComponent<JengaBlockScript>().direction
-	}
-
-
-
-
-
-
-	void checkGameOver() {
-		// If any of the pieces are lower than they were before
-
 	}
 }

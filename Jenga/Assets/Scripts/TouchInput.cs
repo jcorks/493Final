@@ -63,8 +63,8 @@ public class TouchInput : MonoBehaviour {
 
 		if (Input.GetMouseButton(0)) {
 			return true;
-		} else if (Input.touchSupported &&    
-		           touchInstance.tapCount == 1) {
+		} else if (touchEnabled) {    
+		           //touchInstance.tapCount == 1) {
 			return true;
 		}
 
@@ -138,7 +138,7 @@ public class TouchInput : MonoBehaviour {
 	
 
 
-		if (touchEnabled && Input.GetTouch (0).tapCount > 0) {
+		if (touchEnabled) {
 			touchInstance = Input.GetTouch (0);
 			/*
 			if (Input.touchCount == 2) {

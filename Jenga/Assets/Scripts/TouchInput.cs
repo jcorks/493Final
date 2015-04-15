@@ -22,6 +22,10 @@ public class TouchInput : MonoBehaviour {
 	static bool touchUpdated = false;
 	static bool swiping = false;
 
+	
+	static Vector3 lastPointer;
+	static Vector3 pointerDelta;
+
 	void Start() {
 		touchEnabled = Input.touchSupported;
 	}
@@ -92,6 +96,9 @@ public class TouchInput : MonoBehaviour {
 		pinchZoomState = 0;
 		time += Time.deltaTime;
 		UpdateTouch ();
+
+		pointerDelta = Input.mousePosition - lastPointer;
+		lastPointer = Input.mousePosition;
 
 
 		if (isTouchBegin()) {
@@ -182,6 +189,14 @@ public class TouchInput : MonoBehaviour {
 		return Input.mousePosition;
 	}
 
+
+	static public Vector3 tapDelta() {
+		if (touchEnabled) {
+			return touchInstance.deltaPosition;
+		} else {
+			return pointerDelta;
+		}
+	}
 
 
 }

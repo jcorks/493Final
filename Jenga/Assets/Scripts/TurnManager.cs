@@ -213,25 +213,43 @@ public class TurnManager : MonoBehaviour {
 
 	// Put logic here for dragging the piece
 	void UserDragPiece() {
-
 		dragPos += pointerDelta;
 
 		// Get the z coordinate of the piece you wanna drag
 		GameObject piece = Selectable.GetSelection();
-		var original_z = piece.transform.position.z;
-		var rotation = piece.transform.rotation.eulerAngles.y;
+		var dir = piece.GetComponent<JengaBlockScript> ().direction;
 		//Debug.Log ("this piece's rotation: " + rotation);
 
-		Vector3 mousePos2D = dragPos;
-		mousePos2D.z = original_z;
-		//mousePos2D.z = -Camera.main.transform.position.z;
-		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
-		Vector3 pos = this.transform.position;
-		pos.x = mousePos3D.x;
-		pos.y = mousePos3D.y;
-		pos.z = original_z;
-		piece.transform.position = pos;
+		if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
+			var original_z = piece.transform.position.z;
+			Vector3 mousePos2D = dragPos;
+			mousePos2D.z = original_z; // fix the z coordinate when viewing this face
+			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
+			Vector3 pos = this.transform.position;
+			pos.x = mousePos3D.x;
+			pos.y = mousePos3D.y;
+			pos.z = original_z;
+			piece.transform.position = pos;
+		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
+			var original_x = piece.transform.position.x;
+			Vector3 mousePos2D = dragPos;
+			mousePos2D.x = original_x; // fix the x coordinate when viewing this face
+			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
+			Vector3 pos = this.transform.position;
+			pos.x = original_x;
+			pos.y = mousePos3D.y;
+			pos.z = mousePos3D.z;
+			piece.transform.position = pos;
 
-		//piece.GetComponent<JengaBlockScript>().direction
+			//Debug.Log ("Mouse position X: " + mousePos3D.x + " Y: " + mousePos3D.y + " Z: " + mousePos3D.z);
+			//Debug.Log ("Mouse position X: " + mousePos2D.x + " Y: " + mousePos2D.y + " Z: " + mousePos2D.z);
+			//Debug.Log ("Move block to X: " + pos.x + " Y: " + pos.y + " Z: " + pos.z);
+		}
+	
+		// East face does not allow for movement left and right, and pulls the thing out toward the camera.
+		// South face works with default settings
+		// West face does not allow for movement left and right, and pulls the thing out toward the camera.
+		// North face works with the default settings
+
 	}
 }

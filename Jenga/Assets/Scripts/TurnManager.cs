@@ -19,6 +19,7 @@ public class TurnManager : MonoBehaviour {
 	public float degreeDelta = 45f;
 	public float radiusDeltaRatio = .5f;
 	public Vector3 offset = Vector3.zero;
+	public float original_depth;
 	Vector3 towerCenter = Vector3.zero;
 	
 	float pitch =45f,
@@ -154,6 +155,14 @@ public class TurnManager : MonoBehaviour {
 		if (!hasStartedDragUpdate) {
 			selectedOriginalPosition = piece.transform.position;
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
+
+			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+			if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
+				original_depth = piece.transform.position.z;
+			} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
+				original_depth = piece.transform.position.x;
+			}
+
 			hasStartedDragUpdate = true;
 			Selectable.Freeze ();
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Back";
@@ -199,30 +208,31 @@ public class TurnManager : MonoBehaviour {
 	void UserDragPiece() {
 		// Get the z coordinate of the piece you wanna drag
 		GameObject piece = Selectable.GetSelection();
+		piece.GetComponent<Rigidbody> ().freezeRotation = true;
 		var dir = piece.GetComponent<JengaBlockScript> ().direction;
 		//Debug.Log ("this piece's rotation: " + rotation);
 		
 		if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
-			var original_z = piece.transform.position.z;
+			//var original_z = piece.transform.position.z;
 			Vector3 mousePos2D = Input.mousePosition;
-			mousePos2D.z = original_z; // fix the z coordinate when viewing this face
+			mousePos2D.z = original_depth; // fix the z coordinate when viewing this face
 			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
 			Vector3 pos = this.transform.position;
 			pos.x = mousePos3D.x;
 			pos.y = mousePos3D.y;
-			pos.z = original_z;
+			pos.z = original_depth;
 			piece.transform.position = pos;
 		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
 			// Mouse never moves in the z direction, even though the camera changes angle
-			var depth = piece.transform.position.x;
+			//var depth = piece.transform.position.x;
 			Vector3 mousePos2D = Input.mousePosition;
 			var left_right = mousePos2D.x;
 			var up_down = mousePos2D.y;
 
 
-			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, up_down, depth));
+			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, up_down, original_depth));
 			Vector3 pos = this.transform.position;
-			pos.x = depth;
+			pos.x = original_depth;
 			pos.y = mousePos3D.y;
 			pos.z = mousePos3D.z;
 			piece.transform.position = pos;

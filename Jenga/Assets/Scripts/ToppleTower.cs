@@ -1,7 +1,4 @@
-﻿/*
-
-
-void TheDrag_n() {
+﻿/*void TheDrag_n() {
 	// Update is called once per frame
 	Vector3 mousePos2D = Input.mousePosition;
 

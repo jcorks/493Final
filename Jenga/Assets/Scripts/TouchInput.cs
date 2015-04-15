@@ -57,9 +57,6 @@ public class TouchInput : MonoBehaviour {
 	}
 	
 	public static bool tap() {
-		if (swiping)
-			return false;
-
 
 		if (Input.GetMouseButton(0)) {
 			return true;
@@ -130,11 +127,7 @@ public class TouchInput : MonoBehaviour {
 
 	} 
 	void UpdateTouch() {
-		if (touchEnabled) {
-			swiping = (touchInstance.phase == TouchPhase.Moved);
-		} else {
-		
-		}
+
 	
 
 
@@ -192,6 +185,7 @@ public class TouchInput : MonoBehaviour {
 
 	static public Vector3 tapDelta() {
 		if (touchEnabled) {
+
 			return touchInstance.deltaPosition;
 		} else {
 			return pointerDelta;

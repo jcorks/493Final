@@ -38,7 +38,12 @@ public class TurnManager : MonoBehaviour {
 
 	bool hasStartedDragUpdate = false;
 	bool hasStartedChooseUpdate = false;
+	bool hasStartedDragging = false;
 	GameObject gameButton;
+
+	Vector2 dragPos;
+	Vector2 pointerDelta;
+	Vector2 lastPointer;
 
 	float dragTimer = 0f;
 	public Material DragMaterial;
@@ -74,7 +79,12 @@ public class TurnManager : MonoBehaviour {
 	}
 
 
+
 	void FixedUpdate() {
+
+		pointerDelta = new Vector2 (Input.mousePosition.x - lastPointer.x,
+		                            Input.mousePosition.y - lastPointer.y); 
+		lastPointer = Input.mousePosition;
 
 		// First bind values to 0 - 360 to prevent false lerping
 
@@ -161,6 +171,8 @@ public class TurnManager : MonoBehaviour {
 			buttonCallback.AddListener(UndoPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			dragTimer = 0f;
+
+
 		}
 		dragTimer += Time.deltaTime;
 
@@ -170,9 +182,13 @@ public class TurnManager : MonoBehaviour {
 		transform.LookAt (selectedOriginalPosition);
 
 
-		if (dragTimer > 2f) {
-			piece.GetComponent<MeshRenderer>().material = DragMaterial;
-			UserDragPiece ();
+		if (dragTimer > 1.4f) {
+			if (dragTimer < 1.8f) {
+				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+			}
+			if (Input.GetMouseButton(0))
+				UserDragPiece ();
 		}
 	}
 
@@ -198,13 +214,15 @@ public class TurnManager : MonoBehaviour {
 	// Put logic here for dragging the piece
 	void UserDragPiece() {
 
+		dragPos += pointerDelta;
+
 		// Get the z coordinate of the piece you wanna drag
 		GameObject piece = Selectable.GetSelection();
 		var original_z = piece.transform.position.z;
 		var rotation = piece.transform.rotation.eulerAngles.y;
-		Debug.Log ("this piece's rotation: " + rotation);
+		//Debug.Log ("this piece's rotation: " + rotation);
 
-		Vector3 mousePos2D = Input.mousePosition;
+		Vector3 mousePos2D = dragPos;
 		mousePos2D.z = original_z;
 		//mousePos2D.z = -Camera.main.transform.position.z;
 		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);

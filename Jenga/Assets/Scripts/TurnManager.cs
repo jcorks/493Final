@@ -45,7 +45,11 @@ public class TurnManager : MonoBehaviour {
 	public Material DragMaterial;
 	
 	TurnPhase phase = TurnPhase.ChoosePiece;
-	
+	Vector3 dragPos;
+
+	Vector3 lastPointer;
+	Vector3 pointerDelta;
+
 	// Use this for initialization
 	void Start () {
 		gameButton = GameObject.FindObjectOfType<Button> ().gameObject;
@@ -59,6 +63,9 @@ public class TurnManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		pointerDelta = Input.mousePosition - lastPointer;
+		lastPointer = Input.mousePosition;
+
 		switch (phase) {
 		case TurnPhase.InitialPhase:
 			InitialPhaseUpdate();
@@ -170,6 +177,8 @@ public class TurnManager : MonoBehaviour {
 			buttonCallback.AddListener(UndoPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			dragTimer = 0f;
+
+
 		}
 		dragTimer += Time.deltaTime;
 		
@@ -180,6 +189,18 @@ public class TurnManager : MonoBehaviour {
 		
 		
 		if (dragTimer > 2f) {
+			if (dragTimer < 2.3f) {
+				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+			}
+
+			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+
+
+			if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
+				dragPos -= pointerDelta;
+			else 
+				dragPos += pointerDelta;
+
 			piece.GetComponent<MeshRenderer>().material = DragMaterial;
 			UserDragPiece ();
 		}
@@ -199,6 +220,8 @@ public class TurnManager : MonoBehaviour {
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
+		lastPointer = Vector3.zero;
+
 		phase = p;
 	}
 	
@@ -211,10 +234,12 @@ public class TurnManager : MonoBehaviour {
 		piece.GetComponent<Rigidbody> ().freezeRotation = true;
 		var dir = piece.GetComponent<JengaBlockScript> ().direction;
 		//Debug.Log ("this piece's rotation: " + rotation);
-		
+
+		Vector3 mousePos2D = dragPos;
+
 		if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
 			//var original_z = piece.transform.position.z;
-			Vector3 mousePos2D = Input.mousePosition;
+
 			mousePos2D.z = original_depth; // fix the z coordinate when viewing this face
 			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
 			Vector3 pos = this.transform.position;
@@ -225,7 +250,7 @@ public class TurnManager : MonoBehaviour {
 		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
 			// Mouse never moves in the z direction, even though the camera changes angle
 			//var depth = piece.transform.position.x;
-			Vector3 mousePos2D = Input.mousePosition;
+			//Vector3 mousePos2D = -Input.mousePosition;
 			var left_right = mousePos2D.x;
 			var up_down = mousePos2D.y;
 

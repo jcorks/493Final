@@ -39,6 +39,7 @@ public class TurnManager : MonoBehaviour {
 	
 	bool hasStartedDragUpdate = false;
 	bool hasStartedChooseUpdate = false;
+	bool hasStartedDragging = false;
 	GameObject gameButton;
 	
 	float dragTimer = 0f;
@@ -166,12 +167,7 @@ public class TurnManager : MonoBehaviour {
 			selectedOriginalPosition = piece.transform.position;
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
 
-			var dir = piece.GetComponent<JengaBlockScript> ().direction;
-			if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
-				original_depth = piece.transform.position.z;
-			} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
-				original_depth = piece.transform.position.x;
-			}
+
 
 			hasStartedDragUpdate = true;
 			Selectable.Freeze ();
@@ -193,13 +189,23 @@ public class TurnManager : MonoBehaviour {
 		
 		
 		if (dragTimer > 1.4f) {
-			if (dragTimer < 1.7f) {
-				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+			if (!hasStartedDragging) {
+				//dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+				dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+				                      Camera.main.WorldToScreenPoint(piece.transform.position).y);
 				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+
+				if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
+					original_depth = piece.transform.position.z;
+				} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
+					original_depth = piece.transform.position.x;
+				}
+				hasStartedDragging = true;
 			}
 
-			var dir = piece.GetComponent<JengaBlockScript> ().direction;
-			Debug.DrawLine(Vector3.zero, dragPos);
+
+			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
 			if (TouchInput.tap ()) {
 				if (dir == JengaBlockScript.Direction.FacingWest)
@@ -209,6 +215,8 @@ public class TurnManager : MonoBehaviour {
 
 
 				UserDragPiece ();
+			} else {
+
 			}
 		}
 	}
@@ -227,6 +235,7 @@ public class TurnManager : MonoBehaviour {
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
+		hasStartedDragging = false;
 
 
 		phase = p;

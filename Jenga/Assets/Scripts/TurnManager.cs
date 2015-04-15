@@ -127,7 +127,7 @@ public class TurnManager : MonoBehaviour {
 		
 		
 		if (TouchInput.swipeUp ()) {
-			if (roll == 270) return;
+			if (roll == 0) return;
 		    roll -= degreeDelta;
 
 		}
@@ -213,5 +213,7 @@ public class TurnManager : MonoBehaviour {
 		pos.y = mousePos3D.y;
 		pos.z = original_z;
 		piece.transform.position = pos;
+
+		//piece.GetComponent<JengaBlockScript>().direction
 	}
 }

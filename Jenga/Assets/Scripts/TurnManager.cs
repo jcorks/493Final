@@ -47,6 +47,8 @@ public class TurnManager : MonoBehaviour {
 	TurnPhase phase = TurnPhase.ChoosePiece;
 	Vector3 dragPos;
 
+	Vector3 lastPointer;
+	Vector3 pointerDelta;
 
 	// Use this for initialization
 	void Start () {
@@ -61,14 +63,9 @@ public class TurnManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		pointerDelta = Input.mousePosition - lastPointer;
+		lastPointer = Input.mousePosition;
 
-
-
-
-
-		//lastPointer = Input.mousePosition;
-
-		
 		switch (phase) {
 		case TurnPhase.InitialPhase:
 			InitialPhaseUpdate();
@@ -187,28 +184,25 @@ public class TurnManager : MonoBehaviour {
 		
 		Vector3 pieceRot = selectedOriginalRotation;
 		targetPos = selectedOriginalPosition + 
-			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -radius);
+			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.4f*radius);
 		transform.LookAt (selectedOriginalPosition);
 		
 		
-		if (dragTimer > 1.4f) {
-			if (dragTimer < 1.7f) {
+		if (dragTimer > 2f) {
+			if (dragTimer < 2.3f) {
 				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
-				piece.GetComponent<MeshRenderer>().material = DragMaterial;
 			}
 
 			var dir = piece.GetComponent<JengaBlockScript> ().direction;
 
 
-			if (TouchInput.tap ()) {
-				if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
-					dragPos -= TouchInput.tapDelta();
-				else 
-					dragPos += TouchInput.tapDelta();
+			if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
+				dragPos -= pointerDelta;
+			else 
+				dragPos += pointerDelta;
 
-
-				UserDragPiece ();
-			}
+			piece.GetComponent<MeshRenderer>().material = DragMaterial;
+			UserDragPiece ();
 		}
 	}
 	
@@ -226,7 +220,7 @@ public class TurnManager : MonoBehaviour {
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
-
+		lastPointer = Vector3.zero;
 
 		phase = p;
 	}
@@ -282,5 +276,15 @@ public class TurnManager : MonoBehaviour {
 		// North face works with the default settings
 		
 		//piece.GetComponent<JengaBlockScript>().direction
+	}
+
+
+
+
+
+
+	void checkGameOver() {
+		// If any of the pieces are lower than they were before
+
 	}
 }

@@ -129,11 +129,11 @@ public class TouchInput : MonoBehaviour {
 		
 		}
 	
-		/*
+
 
 		if (touchEnabled && Input.GetTouch (0).tapCount > 0) {
 			touchInstance = Input.GetTouch (0);
-
+			/*
 			if (Input.touchCount == 2) {
 
 				Touch t0 = Input.GetTouch (0),
@@ -149,8 +149,9 @@ public class TouchInput : MonoBehaviour {
 					pinchZoomState = 0;
 				}
 			}
+			*/
 		} 
-		*/
+
 
 
 

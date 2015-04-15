@@ -199,6 +199,8 @@ public class TurnManager : MonoBehaviour {
 		// Get the z coordinate of the piece you wanna drag
 		GameObject piece = Selectable.GetSelection();
 		var original_z = piece.transform.position.z;
+		var rotation = piece.transform.rotation.eulerAngles.y;
+		Debug.Log ("this piece's rotation: " + rotation);
 
 		Vector3 mousePos2D = Input.mousePosition;
 		mousePos2D.z = original_z;

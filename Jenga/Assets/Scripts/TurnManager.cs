@@ -186,9 +186,11 @@ public class TurnManager : MonoBehaviour {
 			if (dragTimer < 1.8f) {
 				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
 				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+			} else {
+				if (Input.GetMouseButton(0))
+					UserDragPiece ();
 			}
-			if (Input.GetMouseButton(0))
-				UserDragPiece ();
+
 		}
 	}
 
@@ -232,8 +234,8 @@ public class TurnManager : MonoBehaviour {
 			piece.transform.position = pos;
 		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
 			var original_x = piece.transform.position.x;
-			Vector3 mousePos2D = dragPos;
-			mousePos2D.x = original_x; // fix the x coordinate when viewing this face
+			Vector3 mousePos2D = -dragPos;
+			mousePos2D.z = original_x; // fix the x coordinate when viewing this face
 			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
 			Vector3 pos = this.transform.position;
 			pos.x = original_x;

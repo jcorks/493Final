@@ -129,7 +129,7 @@ public class TouchInput : MonoBehaviour {
 		
 		}
 	
-
+		/*
 
 		if (touchEnabled && Input.GetTouch (0).tapCount > 0) {
 			touchInstance = Input.GetTouch (0);
@@ -150,6 +150,7 @@ public class TouchInput : MonoBehaviour {
 				}
 			}
 		} 
+		*/
 
 
 

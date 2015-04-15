@@ -43,6 +43,16 @@ public class Selectable : MonoBehaviour {
 		enableSelection = true;
 	}
 
+	public static void Deselect() {
+		if (!enableSelection)
+			return;
+		if (selectedRef) {
+			selectedRef.GetComponent<Selectable>().meshRenderer.material = 
+			selectedRef.GetComponent<Selectable>().actualMat;
+		}
+		selectedRef = null;
+	}
+
 
 
 

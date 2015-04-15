@@ -176,6 +176,7 @@ public class TurnManager : MonoBehaviour {
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(UndoPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
+			piece.GetComponent<Rigidbody>().useGravity = false;
 			dragTimer = 0f;
 
 
@@ -184,7 +185,7 @@ public class TurnManager : MonoBehaviour {
 		
 		Vector3 pieceRot = selectedOriginalRotation;
 		targetPos = selectedOriginalPosition + 
-			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.4f*radius);
+			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
 		transform.LookAt (selectedOriginalPosition);
 		
 		
@@ -194,12 +195,13 @@ public class TurnManager : MonoBehaviour {
 			}
 
 			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+			Debug.DrawLine(Vector3.zero, dragPos);
 
-
-			if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
-				dragPos -= pointerDelta;
-			else 
-				dragPos += pointerDelta;
+			if (TouchInput.tap ()) {
+				if (dir == JengaBlockScript.Direction.FacingWest)
+					dragPos -= TouchInput.tapDelta();
+				else 
+					dragPos += TouchInput.tapDelta();
 
 			piece.GetComponent<MeshRenderer>().material = DragMaterial;
 			UserDragPiece ();

@@ -201,7 +201,7 @@ public class TurnManager : MonoBehaviour {
 
 
 			if (TouchInput.tap ()) {
-				if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
+				if (dir == JengaBlockScript.Direction.FacingWest)
 					dragPos -= TouchInput.tapDelta();
 				else 
 					dragPos += TouchInput.tapDelta();

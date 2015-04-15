@@ -259,7 +259,7 @@ public class TurnManager : MonoBehaviour {
 
 
 			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, up_down, original_depth));
-			Vector3 pos = this.transform.position;
+			Vector3 pos = -(this.transform.position);
 			pos.x = original_depth;
 			pos.y = mousePos3D.y;
 			pos.z = mousePos3D.z;
@@ -268,9 +268,9 @@ public class TurnManager : MonoBehaviour {
 			// Set pos.z to mouse position x?
 
 
-			//Debug.Log ("Mouse 3D position X: " + mousePos3D.x + " Y: " + mousePos3D.y + " Z: " + mousePos3D.z);
-			//Debug.Log ("Mouse 2D position X: " + mousePos2D.x + " Y: " + mousePos2D.y + " Z: " + mousePos2D.z);
-			//Debug.Log ("Move block to X: " + pos.x + " Y: " + pos.y + " Z: " + pos.z);
+			Debug.Log ("Mouse 3D position X: " + mousePos3D.x + " Y: " + mousePos3D.y + " Z: " + mousePos3D.z);
+			Debug.Log ("Mouse 2D position X: " + mousePos2D.x + " Y: " + mousePos2D.y + " Z: " + mousePos2D.z);
+			Debug.Log ("Move block to X: " + pos.x + " Y: " + pos.y + " Z: " + pos.z);
 		}
 		
 		// East face does not allow for movement left and right, and pulls the thing out toward the camera.

@@ -191,18 +191,21 @@ public class TurnManager : MonoBehaviour {
 		if (dragTimer > 2f) {
 			if (dragTimer < 2.3f) {
 				dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+				piece.GetComponent<MeshRenderer>().material = DragMaterial;
 			}
 
 			var dir = piece.GetComponent<JengaBlockScript> ().direction;
 
 
-			if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
-				dragPos -= pointerDelta;
-			else 
-				dragPos += pointerDelta;
+			if (TouchInput.tap ()) {
+				if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest)
+					dragPos -= pointerDelta;
+				else 
+					dragPos += pointerDelta;
 
-			piece.GetComponent<MeshRenderer>().material = DragMaterial;
-			UserDragPiece ();
+
+				UserDragPiece ();
+			}
 		}
 	}
 	

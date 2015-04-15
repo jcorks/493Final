@@ -166,7 +166,7 @@ public class TurnManager : MonoBehaviour {
 
 		Vector3 pieceRot = selectedOriginalRotation;
 		targetPos = selectedOriginalPosition + 
-			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.4f*radius);
+			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -1f*radius);
 		transform.LookAt (selectedOriginalPosition);
 
 

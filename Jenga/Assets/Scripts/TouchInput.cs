@@ -89,6 +89,7 @@ public class TouchInput : MonoBehaviour {
 		swipeRightState = false;
 		swipeUpState = false;
 		swipeDownState = false;
+		pinchZoomState = 0;
 		time += Time.deltaTime;
 		UpdateTouch ();
 

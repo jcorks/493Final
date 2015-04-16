@@ -511,7 +511,6 @@ public class TurnManager : MonoBehaviour {
 		drag_position.y = fixed_height;
 		piece.transform.position = drag_position;
 		Debug.Log("UserReplacePiece()");
-		// changePhase(TurnPhase.TurnOver);
 	}
 	
 	

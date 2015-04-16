@@ -156,10 +156,7 @@ public class TurnManager : MonoBehaviour {
 		if (!hasStartedInitialUpdate) {
 			Selectable.Freeze ();
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "";
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(startPicking);
-			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			gameButton.SetActive(false);
 			hasStartedInitialUpdate = true;
 			targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 		}
@@ -174,6 +171,7 @@ public class TurnManager : MonoBehaviour {
 	void ChoosePieceUpdate() {
 		if (!hasStartedChooseUpdate) {
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Pick Piece";
+			gameButton.SetActive(true);
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
@@ -323,17 +321,19 @@ public class TurnManager : MonoBehaviour {
 			selectedOriginalPosition = topPiece.transform.position;
 
 
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Place!";
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(PlacedPiece);
+			gameButton.GetComponent<Button>().onClick = buttonCallback; 
+
+
 
 		}
 
 		transform.LookAt (selectedOriginalPosition);
 
 		if (TouchInput.tap ()) {
-			var dir = Selectable.GetSelection().GetComponent<JengaBlockScript> ().direction;
-			if (dir == JengaBlockScript.Direction.FacingWest)
-				dragPos -= TouchInput.tapDelta();
-			else 
-				dragPos += TouchInput.tapDelta();
+			dragPos += TouchInput.tapDelta();
 			
 			
 			UserReplacePiece ();
@@ -346,7 +346,8 @@ public class TurnManager : MonoBehaviour {
 		if (curPlayer == numPlayers) {
 			curPlayer = 0;
 		}
-
+		Debug.Log ("TURNS OVER NOW");
+		changePhase (TurnPhase.InitialPhase);
 	}
 
 
@@ -379,6 +380,10 @@ public class TurnManager : MonoBehaviour {
 	public void startPicking() {
 		gameText.GetComponent<TextMesh> ().text = "";
 		changePhase (TurnPhase.ChoosePiece);
+	}
+
+	public void PlacedPiece() {
+		changePhase (TurnPhase.TurnOver);
 	}
 	
 	void changePhase(TurnPhase p) {
@@ -438,9 +443,11 @@ public class TurnManager : MonoBehaviour {
 			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
 
 			dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+
 			piece_has_teleported = true;
 		}
 
+		Debug.Log (dragPos);
 		// Get the camera's position to normalize piece movement
 		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);

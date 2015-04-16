@@ -154,7 +154,7 @@ public class TurnManager : MonoBehaviour {
 	
 	void InitialPhaseUpdate() {
 		if (!hasStartedInitialUpdate) {
-			Selectable.Freeze ();
+
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
 			gameButton.SetActive(false);
 			hasStartedInitialUpdate = true;
@@ -175,15 +175,15 @@ public class TurnManager : MonoBehaviour {
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
-			if (Selectable.GetSelection()) {
-				Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
-				rig.useGravity = true;
-			}
+
+
 			Selectable.Thaw ();
+			ResetSelected();
+
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
 
-			Selectable.Deselect();
+
 			return;
 		}
 		
@@ -215,7 +215,8 @@ public class TurnManager : MonoBehaviour {
 		
 		targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 	}
-	
+
+
 	
 	void DragPieceUpdate() {
 		GameObject piece = Selectable.GetSelection();
@@ -347,6 +348,9 @@ public class TurnManager : MonoBehaviour {
 			curPlayer = 0;
 		}
 		Debug.Log ("TURNS OVER NOW");
+		Selectable.Thaw ();
+		ResetSelected ();
+		Selectable.Freeze ();
 		changePhase (TurnPhase.InitialPhase);
 	}
 
@@ -385,13 +389,22 @@ public class TurnManager : MonoBehaviour {
 	public void PlacedPiece() {
 		changePhase (TurnPhase.TurnOver);
 	}
-	
+
+	public void ResetSelected() {
+		if (Selectable.GetSelection()) {
+			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
+			rig.useGravity = true;
+		}
+
+		Selectable.Deselect();
+	}
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
 		hasStartedGameOver = false;
+		hasStartedInitialUpdate = false;
 		gameButton.SetActive (true);
 
 		phase = p;

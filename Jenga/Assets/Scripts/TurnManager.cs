@@ -239,6 +239,7 @@ public class TurnManager : MonoBehaviour {
 			buttonCallback.AddListener(UndoPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			piece.GetComponent<Rigidbody>().useGravity = false;
+			piece.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 			dragTimer = 0f;
 		}
 		dragTimer += Time.deltaTime;
@@ -268,11 +269,12 @@ public class TurnManager : MonoBehaviour {
 
 			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
-			if (TouchInput.isTouchBegin()) {
-				gameButton.SetActive(false);
-			}
+
 
 			if (TouchInput.tap ()) {
+					if (TouchInput.tapDelta() != Vector3.zero)
+						gameButton.SetActive(false);
+
 					if (dir == JengaBlockScript.Direction.FacingWest)
 						dragPos -= TouchInput.tapDelta();
 					else 
@@ -323,7 +325,7 @@ public class TurnManager : MonoBehaviour {
 					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
+			targetPos = topPiece.transform.position +  new Vector3 (-.3f*radius, .6f*radius, -.3f*radius);
 			transform.LookAt (topPiece.transform.position);
 			selectedOriginalPosition = topPiece.transform.position;
 
@@ -350,7 +352,8 @@ public class TurnManager : MonoBehaviour {
 	void TurnOverUpdate() {
 		if (!hasStartedTurnOver) {
 
-
+			targetPos = new Vector3(-.18f*radius, .8f*radius, -.18f*radius) +
+				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 
 			Selectable.Thaw ();
 			ResetSelected ();
@@ -359,6 +362,8 @@ public class TurnManager : MonoBehaviour {
 			stablizeTimer = 0f;
 			gameButton.SetActive(false);
 		}
+		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
+
 		stablizeTimer += Time.deltaTime;
 		if (stablizeTimer < .5f)
 			return;
@@ -434,6 +439,7 @@ public class TurnManager : MonoBehaviour {
 			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
 			rig.useGravity = true;
 			rig.freezeRotation = false;
+			rig.constraints = RigidbodyConstraints.None;
 			Debug.Log ("Reset gravity");
 		}
 

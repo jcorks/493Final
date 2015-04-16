@@ -15,6 +15,9 @@ public class TurnManager : MonoBehaviour {
 		
 	};
 
+	int numPlayers= 2;
+	int curPlayer = 0;
+
 	// The highest piece in the land
 	Vector3 topPiecePos;
 
@@ -39,7 +42,8 @@ public class TurnManager : MonoBehaviour {
 	Vector3 selectedOriginalPosition;
 	Vector3 selectedOriginalRotation;
 	
-	
+
+	bool hasStartedInitialUpdate =false;
 	bool hasStartedDragUpdate = false;
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
@@ -48,11 +52,12 @@ public class TurnManager : MonoBehaviour {
 
 
 	GameObject gameButton;
+	GameObject gameText;
 	
 	float dragTimer = 0f;
 	public Material DragMaterial;
 	
-	TurnPhase phase = TurnPhase.ChoosePiece;
+	TurnPhase phase = TurnPhase.InitialPhase;
 	Vector3 dragPos;
 
 
@@ -63,6 +68,7 @@ public class TurnManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		gameButton = GameObject.FindObjectOfType<Button> ().gameObject;
+		gameText = GameObject.FindObjectOfType<TextMesh> ().gameObject;
 		GameObject tower = GameObject.FindGameObjectWithTag ("Tower");
 		if (tower == null) {
 			Debug.Log ("WARNING! TurnManager could not find the tower prefab to center itself!");
@@ -142,7 +148,17 @@ public class TurnManager : MonoBehaviour {
 	
 	
 	void InitialPhaseUpdate() {
-		changePhase(TurnPhase.ChoosePiece);
+		if (!hasStartedInitialUpdate) {
+			Selectable.Freeze ();
+			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "GET SOME PIECES";
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(startPicking);
+			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			hasStartedInitialUpdate = true;
+			targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
+		}
+
 	}
 	
 	
@@ -156,6 +172,7 @@ public class TurnManager : MonoBehaviour {
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
 			Selectable.Deselect();
+			return;
 		}
 		
 		if (TouchInput.swipeLeft())
@@ -301,6 +318,10 @@ public class TurnManager : MonoBehaviour {
 
 	void TurnOverUpdate() {
 		round++;
+		curPlayer++;
+		if (curPlayer == numPlayers) {
+			curPlayer = 0;
+		}
 
 	}
 
@@ -330,7 +351,11 @@ public class TurnManager : MonoBehaviour {
 	public void UndoPiece() {
 		changePhase ( TurnPhase.ChoosePiece);
 	}
-	
+
+	public void startPicking() {
+		gameText.GetComponent<TextMesh> ().text = "";
+		changePhase (TurnPhase.ChoosePiece);
+	}
 	
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;

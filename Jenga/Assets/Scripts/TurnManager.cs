@@ -445,6 +445,7 @@ public class TurnManager : MonoBehaviour {
 		hasStartedGameOver = false;
 		hasStartedInitialUpdate = false;
 		hasStartedTurnOver = false;
+		piece_has_teleported = false;
 		gameButton.SetActive (true);
 
 		phase = p;

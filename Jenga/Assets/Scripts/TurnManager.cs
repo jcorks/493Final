@@ -401,6 +401,10 @@ public class TurnManager : MonoBehaviour {
 		// Get the camera's position to normalize piece movement
 		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
+
+// WHen it's over changePhase(TurnPhase.TurnOver);
+
+
 		/*var dir = piece.GetComponent<JengaBlockScript> ().direction;
 		if (dir == JengaBlockScript.Direction.FacingWest) {
 			dragPos -= TouchInput.tapDelta();	

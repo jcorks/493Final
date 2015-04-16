@@ -20,7 +20,7 @@ public class AccelerometerInput : MonoBehaviour {
 			forceVector.z = 0;
 		forceVector *= forceValue;
 		
-		this.gameObject.GetComponent<Rigidbody>().AddForce(forceVector, ForceMode.Acceleration);
+		//this.gameObject.GetComponent<Rigidbody>().AddForce(forceVector, ForceMode.Acceleration);
 		if (Input.GetKey(KeyCode.I)){
 			this.gameObject.GetComponent<Rigidbody>().AddForce(0,0,forceValue,ForceMode.Acceleration);
 		}

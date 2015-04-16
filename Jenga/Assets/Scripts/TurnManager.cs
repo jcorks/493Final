@@ -305,12 +305,18 @@ public class TurnManager : MonoBehaviour {
 
 	void GameOverUpdate() {
 		if (!hasStartedGameOver) {
+
+			targetPos = new Vector3(-.6f*radius, .6f*radius, -.6f*radius) +
+				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(endGame);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
 		}
+
+		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
+
 	}
 
 	// Takes the currently selected piece and prepares it for movement.

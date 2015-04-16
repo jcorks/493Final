@@ -370,7 +370,49 @@ public class TurnManager : MonoBehaviour {
 		new_position.y += 0.017f;
 		piece.transform.position = new_position;
 
+		// Keep it from floating away if you're using a mouse
+		piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
 
+		// Get the camera's position to normalize piece movement
+		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
+		/*var dir = piece.GetComponent<JengaBlockScript> ().direction;
+		if (dir == JengaBlockScript.Direction.FacingWest) {
+			dragPos -= TouchInput.tapDelta();	
+		} else {
+			dragPos += TouchInput.tapDelta();
+		}
+
+		if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
+			//var original_z = piece.transform.position.z;
+
+			dragPos.z = original_depth; // fix the z coordinate when viewing this face
+			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (dragPos);
+			Vector3 pos = this.transform.position;
+			pos.x = mousePos3D.x;
+			pos.y = piece.transform.position.y;
+			pos.z = original_depth;
+			piece.transform.position = pos;
+		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
+			var left_right = dragPos.x;
+			var back_forth = dragPos.z;
+			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, back_forth, original_depth));
+			Vector3 pos = -(this.transform.position);
+			pos.x = original_depth;
+			pos.y = piece.transform.position.y;
+			pos.z = mousePos3D.z;
+			piece.transform.position = pos;
+		}*/
+
+
+
+		// Have the user place it wherever they want
+		
+		//Vector3 mousePos2D = Input.mousePosition;
+		
+		/*mousePos2D.y = piece.transform.position.y;
+		Vector3 mousePos2D = dragPos;
+		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);*/
 	}
 	
 	

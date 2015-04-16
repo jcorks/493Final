@@ -6,6 +6,9 @@ public class Music : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
+		GameObject[] musics = GameObject.FindGameObjectsWithTag("Music");
+		if (musics.Length > 1)
+			Destroy(musics[1]);
 		music = this.gameObject.GetComponent<AudioSource>();
 		DontDestroyOnLoad(this.gameObject);
 	}

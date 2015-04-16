@@ -5,9 +5,12 @@ public class MusicController : MonoBehaviour {
 	public static bool musicEnabled = true;
 	public static bool soundEffectsEnabled = true;
 	
+	
+	void Awake(){
+	}
+	
 	// Use this for initialization
 	void Start () {
-		DontDestroyOnLoad(this.gameObject);
 	}
 	
 	// Update is called once per frame

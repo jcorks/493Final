@@ -20,6 +20,8 @@ public class TurnManager : MonoBehaviour {
 
 	// The highest piece in the land
 	Vector3 topPiecePos;
+	// The number of blocks on the top
+	int blocks_on_top;
 
 	public float radius = .17f;
 	public float degreeDelta = 45f;
@@ -284,10 +286,23 @@ public class TurnManager : MonoBehaviour {
 				if (o.transform.position.y > top) {
 					topPiece = o;
 					top = o.transform.position.y;
-
 				}
 			}
 			topPiecePos = topPiece.transform.position;
+			
+			// Get the number of pieces on highest layer
+			blocks_on_top = 0;
+			foreach(GameObject o in pieces) {
+				// If the tower is tilted, the adjacent blocks might not have
+				// exactly the same y value
+				var upper_bound = topPiecePos.y + 0.01;
+				var lower_bound = topPiecePos.y - 0.01;
+				if (o.transform.position.y > lower_bound && o.transform.position.y < upper_bound) {
+					++blocks_on_top;
+				}
+			}
+			Debug.Log("There " + (blocks_on_top > 1 ? " are " : " is ") + blocks_on_top +
+					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
 			Vector3 pieceRot = selectedOriginalRotation;
 			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
@@ -388,7 +403,11 @@ public class TurnManager : MonoBehaviour {
 		Vector3 new_position = topPiecePos;
 		new_position.x += 0.05f;
 		new_position.z += 0.05f;
-		new_position.y += 0.017f;
+		if (blocks_on_top == 3) { // start new layer
+			new_position.y += 0.017f;
+		} else { // add to current highest layer
+			new_position.y += 0.003f;
+		}
 		piece.transform.position = new_position;
 
 		// Keep it from floating away if you're using a mouse
@@ -398,9 +417,8 @@ public class TurnManager : MonoBehaviour {
 		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
-		// When it's over changePhase(TurnPhase.TurnOver);
+		Vector3 block_location = piece.transform.position;
 
-		
 
 
 		/*var dir = piece.GetComponent<JengaBlockScript> ().direction;
@@ -440,6 +458,12 @@ public class TurnManager : MonoBehaviour {
 		/*mousePos2D.y = piece.transform.position.y;
 		Vector3 mousePos2D = dragPos;
 		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);*/
+
+
+
+
+		// ********** DON'T DELETE **********
+		// changePhase(TurnPhase.TurnOver);
 	}
 	
 	

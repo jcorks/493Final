@@ -395,29 +395,54 @@ public class TurnManager : MonoBehaviour {
 
 
 	////// User updates
-
+	bool piece_has_teleported = false;
+	Vector3 last_position;
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	void UserReplacePiece() {
 		GameObject piece = Selectable.GetSelection();
 		Vector3 new_position = topPiecePos;
-		new_position.x += 0.05f;
-		new_position.z += 0.05f;
-		if (blocks_on_top == 3) { // start new layer
-			new_position.y += 0.017f;
-		} else { // add to current highest layer
-			new_position.y += 0.003f;
+		if (!piece_has_teleported) {
+			new_position.x += 0.05f;
+			new_position.z += 0.05f;
+			if (blocks_on_top == 3) { // start new layer
+				new_position.y += 0.017f;
+			} else { // add to current highest layer
+				new_position.y += 0.003f;
+			}
+			piece.transform.position = new_position;
+			// Keep it from floating away if you're using a mouse
+			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
+			piece_has_teleported = true;
 		}
-		piece.transform.position = new_position;
-
-		// Keep it from floating away if you're using a mouse
-		piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
 
 		// Get the camera's position to normalize piece movement
-		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
-		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
+		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
-		Vector3 block_location = piece.transform.position;
+		last_position = piece.transform.position;
+
+		Vector3 dragPos2 = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+				                       Camera.main.WorldToScreenPoint(piece.transform.position).y);
+		var temp = dragPos2.y;
+		dragPos2.z = temp;
+		dragPos2.y = new_position.y; // Cuz this shouldn't change
+		piece.transform.position = dragPos2;
+
+		// Will get to this point only when touch is occuring
+
+		// Set public Vector3 of previous position
+		// 
+		Debug.Log("UserReplacePiece()");
+
+//		Vector3 start_pos;
+
+
+
+
+/*		if(Input.GetKey(KeyCode.MouseDown)){
+			piece.transform.position = dragPos2;		
+		}*/
 
 
 

@@ -432,6 +432,7 @@ public class TurnManager : MonoBehaviour {
 		if (Selectable.GetSelection()) {
 			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
 			rig.useGravity = true;
+			rig.freezeRotation = false;
 			Debug.Log ("Reset gravity");
 		}
 
@@ -530,6 +531,7 @@ public class TurnManager : MonoBehaviour {
 				}
 			} else { // add to current highest layer
 				new_position.y += 0.003f;
+
 			}
 					// Keep it from floating away if you're using a mouse
 			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
@@ -540,7 +542,7 @@ public class TurnManager : MonoBehaviour {
 
 		
 
-		Debug.Log (dragPos);
+
 		// Get the camera's position to normalize piece movement
 		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);

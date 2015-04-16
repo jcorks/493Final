@@ -20,8 +20,11 @@ public class TurnManager : MonoBehaviour {
 
 	// The highest piece in the land
 	Vector3 topPiecePos;
+	// the rotation of the top piece
+	Vector3 topPieceRotation;
 	// The number of blocks on the top
 	int blocks_on_top;
+
 
 	public float radius = .17f;
 	public float degreeDelta = 45f;
@@ -298,6 +301,7 @@ public class TurnManager : MonoBehaviour {
 				}
 			}
 			topPiecePos = topPiece.transform.position;
+			topPieceRotation = topPiece.transform.rotation.eulerAngles;
 			
 			// Get the number of pieces on highest layer
 			blocks_on_top = 0;
@@ -407,14 +411,25 @@ public class TurnManager : MonoBehaviour {
 	bool piece_has_teleported = false;
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
+	float fixed_height;
 	void UserReplacePiece() {
 		GameObject piece = Selectable.GetSelection();
+		var selected_piece_rotation = piece.transform.rotation.eulerAngles;
+		var selected_piece_rotation_upper_limit = selected_piece_rotation + new Vector3(0f, 0.01f, 0f);
+		var selected_piece_rotation_lower_limit = selected_piece_rotation - new Vector3(0f, 0.01f, 0f);
+
 		Vector3 new_position = topPiecePos;
+
+
 		if (!piece_has_teleported) {
 			new_position.x += 0.05f;
 			new_position.z += 0.05f;
 			if (blocks_on_top == 3) { // start new layer
 				new_position.y += 0.017f;
+				fixed_height = new_position.y;
+
+				//if (topPieceRotation < selected_piece_rotation_upper_limit && )
+
 			} else { // add to current highest layer
 				new_position.y += 0.003f;
 			}
@@ -431,7 +446,7 @@ public class TurnManager : MonoBehaviour {
 		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
 		Vector3 drag_position = Camera.main.ScreenToWorldPoint(dragPos);
-		drag_position.y = new_position.y;
+		drag_position.y = fixed_height;
 
 		piece.transform.position = drag_position;
 		Debug.Log("UserReplacePiece()");

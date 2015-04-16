@@ -10,7 +10,7 @@ public class TurnManager : MonoBehaviour {
 		ChoosePiece,
 		DragPiece,
 		ReplacePiece,
-		FreeMode
+		TurnOver,
 		
 	};
 	
@@ -40,6 +40,7 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedDragUpdate = false;
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
+	bool hasStartedReplaceUpdate = false;
 	GameObject gameButton;
 	
 	float dragTimer = 0f;
@@ -47,6 +48,10 @@ public class TurnManager : MonoBehaviour {
 	
 	TurnPhase phase = TurnPhase.ChoosePiece;
 	Vector3 dragPos;
+
+
+	float turnOverPieceRadius = 1f;
+	static int round = 0;
 
 
 	// Use this for initialization
@@ -79,6 +84,11 @@ public class TurnManager : MonoBehaviour {
 			break;
 		case TurnPhase.DragPiece:
 			DragPieceUpdate ();
+			break;
+		case TurnPhase.ReplacePiece:
+			ReplacePieceUpdate();
+			break;
+		case TurnPhase.TurnOver:
 			break;
 		}
 		
@@ -207,6 +217,10 @@ public class TurnManager : MonoBehaviour {
 
 			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
+			if (TouchInput.tapDelta() != Vector3.zero) {
+				gameButton.SetActive(false);
+			}
+
 			if (TouchInput.tap ()) {
 				if (dir == JengaBlockScript.Direction.FacingWest)
 					dragPos -= TouchInput.tapDelta();
@@ -219,6 +233,20 @@ public class TurnManager : MonoBehaviour {
 
 			}
 		}
+	}
+
+
+
+	// Update for when the player has successfully pulled out a piece
+	void ReplacePieceUpdate() {
+		if (!hasStartedReplaceUpdate) {
+			GameObject piece = Selectable.GetSelection();
+			piece.GetComponent<Rigidbody>().useGravity = true;
+			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
+			hasStartedReplaceUpdate = true;
+			piece.GetComponent<Rigidbody> ().freezeRotation = false;
+		}
+
 	}
 	
 	// Takes the currently selected piece and prepares it for movement.
@@ -236,7 +264,8 @@ public class TurnManager : MonoBehaviour {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
-
+		hasStartedReplaceUpdate = false;
+		gameButton.SetActive (true);
 
 		phase = p;
 	}
@@ -284,6 +313,17 @@ public class TurnManager : MonoBehaviour {
 			//Debug.Log ("Mouse 3D position X: " + mousePos3D.x + " Y: " + mousePos3D.y + " Z: " + mousePos3D.z);
 			//Debug.Log ("Mouse 2D position X: " + mousePos2D.x + " Y: " + mousePos2D.y + " Z: " + mousePos2D.z);
 			//Debug.Log ("Move block to X: " + pos.x + " Y: " + pos.y + " Z: " + pos.z);
+		}
+
+
+		// Detect whether or not the piece was dragged out
+		Rigidbody pieceRig = piece.GetComponent<Rigidbody> (); 
+
+		RaycastHit hit;
+		if (!pieceRig.SweepTest(new Vector3(0, 1, 0), out hit,  1) ||
+		    !pieceRig.SweepTest(new Vector3(0, -1, 0), out hit, 1)) {
+			Debug.Log ("TURNS OVER");
+			changePhase(TurnPhase.ReplacePiece);
 		}
 		
 		// East face does not allow for movement left and right, and pulls the thing out toward the camera.

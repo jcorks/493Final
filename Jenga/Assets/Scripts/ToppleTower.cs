@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 
 public class ToppleTower : MonoBehaviour {
+	public AudioSource soundEffect;
 	public int num_touching_table = 0;
 
 	void Update() {
@@ -24,6 +25,7 @@ public class ToppleTower : MonoBehaviour {
 		// greater than the number in the previous round.
 		if (num_touching_table > 3) {
 			Debug.Log ("GAME OVER");
+			soundEffect.Play();
 		}
 	}
 }

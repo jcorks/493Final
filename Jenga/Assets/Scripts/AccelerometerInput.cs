@@ -18,7 +18,7 @@ public class AccelerometerInput : MonoBehaviour {
 			forceVector.y = 0;
 		if (forceVector.z < movingThreshold)
 			forceVector.z = 0;
-		
+		forceValue /= 10000;
 		
 		this.gameObject.GetComponent<Rigidbody>().AddForce(forceVector, ForceMode.Acceleration);
 		/*if (Input.GetKey(KeyCode.I)){

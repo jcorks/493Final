@@ -14,8 +14,10 @@ public class TurnManager : MonoBehaviour {
 		GameOver
 		
 	};
-	
-	
+
+	// The highest piece in the land
+	Vector3 topPiecePos;
+
 	public float radius = .17f;
 	public float degreeDelta = 45f;
 	public float radiusDeltaRatio = .5f;
@@ -261,7 +263,7 @@ public class TurnManager : MonoBehaviour {
 
 
 			// Get top of tower position
-			Vector3 topPiecePos = Vector3.zero;;
+			topPiecePos = Vector3.zero;;
 			float top = -999;
 			GameObject topPiece = null;
 			GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
@@ -272,7 +274,7 @@ public class TurnManager : MonoBehaviour {
 
 				}
 			}
-
+			topPiecePos = topPiece.transform.position;
 
 			Vector3 pieceRot = selectedOriginalRotation;
 			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
@@ -305,12 +307,18 @@ public class TurnManager : MonoBehaviour {
 
 	void GameOverUpdate() {
 		if (!hasStartedGameOver) {
+
+			targetPos = new Vector3(-.6f*radius, .6f*radius, -.6f*radius) +
+				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(endGame);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
 		}
+
+		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
+
 	}
 
 	// Takes the currently selected piece and prepares it for movement.
@@ -355,6 +363,12 @@ public class TurnManager : MonoBehaviour {
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	void UserReplacePiece() {
+		GameObject piece = Selectable.GetSelection();
+		Vector3 new_position = topPiecePos;
+		new_position.x += 0.05f;
+		new_position.z += 0.05f;
+		new_position.y += 0.017f;
+		piece.transform.position = new_position;
 
 	}
 	

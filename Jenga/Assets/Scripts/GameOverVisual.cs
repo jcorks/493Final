@@ -5,8 +5,10 @@ public class GameOverVisual : MonoBehaviour {
 	SpriteRenderer spr;
 	float time = 0f;
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 		spr = GetComponent<SpriteRenderer> ();
+		if (!spr)
+			Destroy (gameObject);
 	}
 
 	public void EnableVisual() {

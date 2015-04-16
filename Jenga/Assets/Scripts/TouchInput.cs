@@ -185,7 +185,7 @@ public class TouchInput : MonoBehaviour {
 		if (touchEnabled) {
 			if (ios_device && Input.touchCount == 0) {
 				Debug.Log("isTouchBegin() *FALSE");
-				return false;
+				//return false;
 			} else if (ios_device && Input.touchCount >= 1) {
 				Debug.Log("isTouchBegin() TRUE");
 			}
@@ -210,9 +210,10 @@ public class TouchInput : MonoBehaviour {
 		if (touchEnabled) {
 			if (ios_device && Input.touchCount == 0) {
 				Debug.Log("getTouchPos() Nothing touching screen");
-				return Vector3.zero;
+			//	return Vector3.zero;
 			} else if (ios_device && Input.touchCount >= 1) {
 				Debug.Log("getTouchPos() "+Input.touchCount+" fingers on the screen");
+				return touchInstance.position;
 			}
 			return touchInstance.position;
 		}

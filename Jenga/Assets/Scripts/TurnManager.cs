@@ -321,7 +321,7 @@ public class TurnManager : MonoBehaviour {
 					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position +  new Vector3 (-.3f*radius, .6f*radius, -.3f*radius);
+			targetPos = topPiece.transform.position +  new Vector3 (-.5f*radius, .8f*radius, -.5f*radius);
 			transform.LookAt (topPiece.transform.position);
 			selectedOriginalPosition = topPiece.transform.position;
 

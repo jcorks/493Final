@@ -11,6 +11,7 @@ public class TurnManager : MonoBehaviour {
 		DragPiece,
 		ReplacePiece,
 		TurnOver,
+		GameOver
 		
 	};
 	
@@ -41,6 +42,8 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+	bool hasStartedGameOver = false;
+
 
 	GameObject gameButton;
 	
@@ -64,6 +67,8 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+
+		GetComponentInChildren<GameOverVisual>().DisableVisual();
 	}
 	
 	// Update is called once per frame
@@ -92,11 +97,17 @@ public class TurnManager : MonoBehaviour {
 		case TurnPhase.TurnOver:
 			TurnOverUpdate();
 			break;
+		case TurnPhase.GameOver:
+			GameOverUpdate();
+			break;
 		}
 		
 		
 	}
-	
+
+	public void GameOver() {
+		changePhase (TurnPhase.GameOver);
+	}
 	
 	void FixedUpdate() {
 		
@@ -291,6 +302,17 @@ public class TurnManager : MonoBehaviour {
 
 	}
 
+
+	void GameOverUpdate() {
+		if (!hasStartedGameOver) {
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(endGame);
+			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
+			GetComponentInChildren<GameOverVisual>().EnableVisual();
+		}
+	}
+
 	// Takes the currently selected piece and prepares it for movement.
 	public void FinalizePiece() {
 		changePhase(TurnPhase.DragPiece);
@@ -307,12 +329,15 @@ public class TurnManager : MonoBehaviour {
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
+		hasStartedGameOver = false;
 		gameButton.SetActive (true);
 
 		phase = p;
 	}
 
-
+	void endGame() {
+		Application.LoadLevel ("MainMenu");
+	}
 
 
 

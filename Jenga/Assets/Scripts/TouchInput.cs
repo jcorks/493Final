@@ -80,9 +80,11 @@ public class TouchInput : MonoBehaviour {
 			return true;
 		} else if (touchEnabled) {    
 		           //touchInstance.tapCount == 1) {
+			if (ios_device && Input.touchCount == 0) {
+				return false;
+			}
 			return true;
 		}
-
 		return false;
 	}
 	
@@ -101,9 +103,6 @@ public class TouchInput : MonoBehaviour {
 
 	void Update() {
 
-
-
-
 		swipeLeftState = false;
 		swipeRightState = false;
 		swipeUpState = false;
@@ -115,16 +114,12 @@ public class TouchInput : MonoBehaviour {
 		pointerDelta = Input.mousePosition - lastPointer;
 		lastPointer = Input.mousePosition;
 
-
 		if (isTouchBegin()) {
 			lastpos = getTouchPos();
 			time = 0f;
 		} else if (isTouchEnd ()) {
 			thispos = getTouchPos();
 			Vector2 delta = thispos - lastpos;
-
-
-
 
 			if (delta.x < -threshold * Screen.width) {
 				swipeLeftState = true; 
@@ -140,10 +135,8 @@ public class TouchInput : MonoBehaviour {
 				
 			}
 		}
-
-
-
 	} 
+
 	void UpdateTouch() {
 
 	
@@ -152,7 +145,7 @@ public class TouchInput : MonoBehaviour {
 		if (touchEnabled) {
 			if (android_device) {
 				touchInstance = Input.GetTouch (0);
-			} else if (ios_device && Input.touchCount >= 1) {
+			} else if (ios_device && Input.touchCount > 0) {
 				touchInstance = Input.GetTouch (0);
 			}
 			/*

@@ -221,8 +221,6 @@ public class TurnManager : MonoBehaviour {
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			piece.GetComponent<Rigidbody>().useGravity = false;
 			dragTimer = 0f;
-
-
 		}
 		dragTimer += Time.deltaTime;
 		
@@ -256,16 +254,14 @@ public class TurnManager : MonoBehaviour {
 			}
 
 			if (TouchInput.tap ()) {
-				if (dir == JengaBlockScript.Direction.FacingWest)
-					dragPos -= TouchInput.tapDelta();
-				else 
-					dragPos += TouchInput.tapDelta();
-
-
-				UserDragPiece ();
+					if (dir == JengaBlockScript.Direction.FacingWest)
+						dragPos -= TouchInput.tapDelta();
+					else 
+						dragPos += TouchInput.tapDelta();
+					UserDragPiece ();
+				}
 			} 
 		}
-	}
 
 
 
@@ -402,7 +398,9 @@ public class TurnManager : MonoBehaviour {
 		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
-// WHen it's over changePhase(TurnPhase.TurnOver);
+		// When it's over changePhase(TurnPhase.TurnOver);
+
+		
 
 
 		/*var dir = piece.GetComponent<JengaBlockScript> ().direction;

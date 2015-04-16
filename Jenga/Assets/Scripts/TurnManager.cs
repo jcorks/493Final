@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -53,7 +53,6 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
-	bool hasStartedTurnOver = false;
 	bool hasStartedGameOver = false;
 
 
@@ -61,7 +60,6 @@ public class TurnManager : MonoBehaviour {
 	GameObject gameText;
 	
 	float dragTimer = 0f;
-	float stablizeTimer = 0f;
 	public Material DragMaterial;
 	
 	TurnPhase phase = TurnPhase.InitialPhase;
@@ -125,9 +123,6 @@ public class TurnManager : MonoBehaviour {
 	}
 	
 	void FixedUpdate() {
-
-
-		
 		
 		// First bind values to 0 - 360 to prevent false lerping
 		
@@ -159,7 +154,7 @@ public class TurnManager : MonoBehaviour {
 	
 	void InitialPhaseUpdate() {
 		if (!hasStartedInitialUpdate) {
-
+			Selectable.Freeze ();
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
 			gameButton.SetActive(false);
 			hasStartedInitialUpdate = true;
@@ -180,15 +175,15 @@ public class TurnManager : MonoBehaviour {
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
-
-
+			if (Selectable.GetSelection()) {
+				Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
+				rig.useGravity = true;
+			}
 			Selectable.Thaw ();
-			ResetSelected();
-
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
 
-
+			Selectable.Deselect();
 			return;
 		}
 		
@@ -220,8 +215,7 @@ public class TurnManager : MonoBehaviour {
 		
 		targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 	}
-
-
+	
 	
 	void DragPieceUpdate() {
 		GameObject piece = Selectable.GetSelection();
@@ -347,34 +341,12 @@ public class TurnManager : MonoBehaviour {
 	}
 
 	void TurnOverUpdate() {
-		if (!hasStartedTurnOver) {
-
-
-
-			Selectable.Thaw ();
-			ResetSelected ();
-			Selectable.Freeze ();
-			hasStartedTurnOver = true;
-			stablizeTimer = 0f;
-			gameButton.SetActive(false);
-		}
-		stablizeTimer += Time.deltaTime;
-		if (stablizeTimer < .5f)
-			return;
-
-
-
-		// wait for stabliztion;
-		if (!isStablized ())
-			return;
-
 		round++;
 		curPlayer++;
 		if (curPlayer == numPlayers) {
 			curPlayer = 0;
 		}
 		Debug.Log ("TURNS OVER NOW");
-
 		changePhase (TurnPhase.InitialPhase);
 	}
 
@@ -389,7 +361,6 @@ public class TurnManager : MonoBehaviour {
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
-			gameText.GetComponent<TextMesh>().text = "";
 		}
 
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
@@ -414,39 +385,13 @@ public class TurnManager : MonoBehaviour {
 	public void PlacedPiece() {
 		changePhase (TurnPhase.TurnOver);
 	}
-
-	public bool isStablized() {
-		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
-		bool sleep = true;
-		foreach (GameObject o in blocks) {
-			if (!o.GetComponent<Rigidbody>().IsSleeping()) {
-				sleep = false;
-				break;
-			}
-		}
-		return sleep;
-
-	}
-
-	public void ResetSelected() {
-		if (Selectable.GetSelection()) {
-			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
-			rig.useGravity = true;
-			rig.freezeRotation = false;
-			Debug.Log ("Reset gravity");
-		}
-
-		Selectable.Deselect();
-	}
+	
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
 		hasStartedGameOver = false;
-		hasStartedInitialUpdate = false;
-		hasStartedTurnOver = false;
-		piece_has_teleported = false;
 		gameButton.SetActive (true);
 
 		phase = p;
@@ -468,88 +413,44 @@ public class TurnManager : MonoBehaviour {
 
 
 	////// User updates
-	bool piece_has_teleported = false;
+	
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	float fixed_height;
+	float placement_rotation = 0f;
 	bool facing_same_direction = false;
+	bool piece_has_teleported = false;
 	void UserReplacePiece() {
 		
 		GameObject piece = Selectable.GetSelection();
-		var selected_piece_rotation = piece.transform.rotation.eulerAngles;
-		var selected_piece_rotation_upper_limit = selected_piece_rotation + new Vector3(0f, 6f, 0f);
-		var selected_piece_rotation_lower_limit = selected_piece_rotation - new Vector3(0f, 6f, 0f);
-		if (selected_piece_rotation_lower_limit.y < 0f) {
-			selected_piece_rotation_lower_limit.y += 360f;
-		}
-
-		var _180_off_top_piece_rotation = piece.transform.rotation.eulerAngles;
-		//Debug.Log("Before " + _180_off_top_piece_rotation.y);
-		_180_off_top_piece_rotation.y += 180f;
-		//Debug.Log("After " + _180_off_top_piece_rotation.y);
-		var _180_off_top_piece_rotation_upper_limit = _180_off_top_piece_rotation + new Vector3(0f, 6f, 0f);
-		var _180_off_top_piece_rotation_lower_limit = _180_off_top_piece_rotation - new Vector3(0f, 6f, 0f);
-		if (_180_off_top_piece_rotation_lower_limit.y < 0f) {
-		//	Debug.Log("LESS THAN ZERO");
-			_180_off_top_piece_rotation_lower_limit.y += 360f;
-		}
-
-		/*Debug.Log("Upper limit same rotation " + selected_piece_rotation_upper_limit);
-		Debug.Log("Lower limit same rotation " + selected_piece_rotation_lower_limit);
-		
-		Debug.Log("Upper limit opposite rotation " + _180_off_top_piece_rotation_upper_limit.y);
-		Debug.Log("Lower limit opposite rotation " + _180_off_top_piece_rotation_lower_limit.y);*/
-
 		Vector3 new_position = topPiecePos;
+
+		if ((round % 3) -3 == 0) {
+			if (placement_rotation == 90f) {
+				placement_rotation = 0f;
+			}
+		}
+		Vector3 temp_rotation = piece.transform.rotation.eulerAngles;
+		temp_rotation.y = placement_rotation;
+		piece.transform.rotation = Quaternion.Euler(temp_rotation);
 
 		if (!piece_has_teleported) {
 			new_position.x += 0.05f;
 			new_position.z += 0.05f;
 			if (blocks_on_top == 3) { // start new layer
-				new_position.y += 0.017f;
+				new_position.y += 0.02f;
 				fixed_height = new_position.y;
-
-				if (topPieceRotation.y < selected_piece_rotation_upper_limit.y &&
-					topPieceRotation.y > selected_piece_rotation_lower_limit.y) {
-						facing_same_direction = true;
-						Vector3 tpr = topPieceRotation;
-						tpr.y += 90f;
-						piece.transform.rotation = Quaternion.Euler(tpr);
-						Debug.Log("they're facing the SAME direction1");
-				} else if (topPieceRotation.y < _180_off_top_piece_rotation_upper_limit.y &&
-				  		   topPieceRotation.y > _180_off_top_piece_rotation_lower_limit.y) {
-							// they're facing the same direction
-							Vector3 tpr = topPieceRotation;
-							tpr.y += 90f;
-							//piece.transform.Rotate(tpr);
-					piece.transform.rotation = Quaternion.Euler(tpr);
-							Debug.Log("they're facing the SAME direction2");
-				} else {
-					facing_same_direction = false;
-					
-					Debug.Log("they're facing the OPPOSITE direction");
-				}
 			} else { // add to current highest layer
-				new_position.y += 0.003f;
-
+				new_position.y += 0.009f;
 			}
-					// Keep it from floating away if you're using a mouse
+			// Keep it from floating away if you're using a mouse
 			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
 			dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
 			piece_has_teleported = true;
 		}
 		piece.transform.position = new_position;
-
-		
-
-
-		// Get the camera's position to normalize piece movement
-		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
-		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);
-
 		Vector3 drag_position = Camera.main.ScreenToWorldPoint(dragPos);
 		drag_position.y = fixed_height;
-
 		piece.transform.position = drag_position;
 		Debug.Log("UserReplacePiece()");
 		// changePhase(TurnPhase.TurnOver);

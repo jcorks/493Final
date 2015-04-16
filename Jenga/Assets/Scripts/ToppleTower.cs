@@ -26,6 +26,7 @@ public class ToppleTower : MonoBehaviour {
 			Debug.Log ("GAME OVER");
 			soundEffect.Play();
 			game_over = true;
+			GameObject.FindObjectOfType<TurnManager>().GameOver();
 		}
 	}
 }

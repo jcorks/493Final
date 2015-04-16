@@ -69,7 +69,7 @@ public class TurnManager : MonoBehaviour {
 
 
 	float turnOverPieceRadius = 1f;
-	static int round = 0;
+	public static int round = 0;
 
 
 	// Use this for initialization
@@ -82,6 +82,7 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+		round = 0;
 
 		GetComponentInChildren<GameOverVisual>().DisableVisual();
 	}

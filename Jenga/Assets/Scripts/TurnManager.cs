@@ -405,7 +405,6 @@ public class TurnManager : MonoBehaviour {
 
 	////// User updates
 	bool piece_has_teleported = false;
-	Vector3 last_position;
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	void UserReplacePiece() {
@@ -422,6 +421,8 @@ public class TurnManager : MonoBehaviour {
 			piece.transform.position = new_position;
 			// Keep it from floating away if you're using a mouse
 			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
+
+			dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
 			piece_has_teleported = true;
 		}
 
@@ -429,19 +430,10 @@ public class TurnManager : MonoBehaviour {
 		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
-		last_position = piece.transform.position;
+		Vector3 drag_position = Camera.main.ScreenToWorldPoint(dragPos);
+		drag_position.y = new_position.y;
 
-		Vector3 dragPos2 = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
-				                       Camera.main.WorldToScreenPoint(piece.transform.position).y);
-		var temp = dragPos2.y;
-		dragPos2.z = temp;
-		dragPos2.y = new_position.y; // Cuz this shouldn't change
-		piece.transform.position = dragPos2;
-
-		// Will get to this point only when touch is occuring
-
-		// Set public Vector3 of previous position
-		// 
+		piece.transform.position = drag_position;
 		Debug.Log("UserReplacePiece()");
 
 //		Vector3 start_pos;

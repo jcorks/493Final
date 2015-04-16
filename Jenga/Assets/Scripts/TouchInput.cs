@@ -150,11 +150,11 @@ public class TouchInput : MonoBehaviour {
 
 
 		if (touchEnabled) {
-			if (Input.touchCount >= 1) {
+			if (android_device) {
 				touchInstance = Input.GetTouch (0);
-				Debug.Log("UpdateTouch()");
+			} else if (ios_device && Input.touchCount >= 1) {
+				touchInstance = Input.GetTouch (0);
 			}
-
 			/*
 			if (Input.touchCount == 2) {
 

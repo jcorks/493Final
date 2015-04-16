@@ -448,6 +448,8 @@ public class TurnManager : MonoBehaviour {
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
 		hasStartedGameOver = false;
+		hasStartedTurnOver = false;
+		hasStartedInitialUpdate = false;
 		gameButton.SetActive (true);
 
 		phase = p;

@@ -8,7 +8,7 @@ public class Selectable : MonoBehaviour {
 	static GameObject selectedRef = null;
 	Material actualMat = null;
 	public Material selectedMat;
-	static bool enableSelection = true;
+	public static bool enableSelection = true;
 	MeshRenderer meshRenderer = null;
 
 

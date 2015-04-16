@@ -477,7 +477,7 @@ public class TurnManager : MonoBehaviour {
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	float fixed_height;
-	float placement_rotation = 0f;
+	float placement_rotation = 90f;
 	bool facing_same_direction = false;
 	bool piece_has_teleported = false;
 	void UserReplacePiece() {
@@ -485,16 +485,19 @@ public class TurnManager : MonoBehaviour {
 		GameObject piece = Selectable.GetSelection();
 		Vector3 new_position = topPiecePos;
 
-		if ((round % 3) -3 == 0) {
-			if (placement_rotation == 90f) {
-				placement_rotation = 0f;
-			}
-		}
+
 		Vector3 temp_rotation = piece.transform.rotation.eulerAngles;
 		temp_rotation.y = placement_rotation;
 		piece.transform.rotation = Quaternion.Euler(temp_rotation);
 
 		if (!piece_has_teleported) {
+			if ((round % 3) == 0) {
+				if (placement_rotation == 90f) {
+					placement_rotation = 0f;
+				} else {
+					placement_rotation = 90f;
+				}
+			}
 			new_position.x += 0.05f;
 			new_position.z += 0.05f;
 			if (blocks_on_top == 3) { // start new layer

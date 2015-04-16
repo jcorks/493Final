@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class AccelerometerInput : MonoBehaviour {
-	float forceValue = 0.1f; //1/10,000
+	float forceValue = 0.2f; //1/10,000
 	float movingThreshold = 0.1f;
 	// Use this for initialization
 	void Start () {
@@ -12,11 +12,11 @@ public class AccelerometerInput : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		Vector3 forceVector = Input.acceleration;
-		if (forceVector.x < movingThreshold)
+		if (Mathf.Abs(forceVector.x) < movingThreshold)
 			forceVector.x = 0;
-		if (forceVector.y < movingThreshold)
+		if (Mathf.Abs(forceVector.y) < movingThreshold)
 			forceVector.y = 0;
-		if (forceVector.z < movingThreshold)
+		if (Mathf.Abs(forceVector.z) < movingThreshold)
 			forceVector.z = 0;
 		forceVector *= forceValue;
 		

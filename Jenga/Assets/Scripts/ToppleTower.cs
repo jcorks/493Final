@@ -1,13 +1,31 @@
-﻿/*void TheDrag_n() {
-	// Update is called once per frame
-	Vector3 mousePos2D = Input.mousePosition;
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
 
-	mousePos2D.z = -Camera.main.transform.position.z;
 
-	Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);
 
-	Vector3 pos = this.transform.position;
-	pos.x = mousePos3D.x;
-	this.transform.position = pos;
+public class ToppleTower : MonoBehaviour {
+	public AudioSource soundEffect;
+	public int num_touching_table = 0;
+
+	void Update() {
+
+
+	}
+
+	void OnCollisionEnter (Collision coll) {
+		// Find out what hit the table
+		GameObject collidedWith = coll.gameObject;
+		if (collidedWith.tag == "JengaBlock") {
+			++num_touching_table;
+		}
+		// Once we have the concept of rounds, we can save the
+		// number touching the table from the previous round
+		// and check to see if the number after this round is
+		// greater than the number in the previous round.
+		if (num_touching_table > 3) {
+			Debug.Log ("GAME OVER");
+			soundEffect.Play();
+		}
+	}
 }
-*/

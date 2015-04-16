@@ -2,12 +2,11 @@
 using System.Collections;
 using UnityEngine.UI;
 
-
-
 public class ToppleTower : MonoBehaviour {
 	public AudioSource soundEffect;
 	public int num_touching_table = 0;
 	public bool game_over = false;
+
 	void Update() {
 
 

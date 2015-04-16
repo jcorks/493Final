@@ -153,12 +153,16 @@ public class TurnManager : MonoBehaviour {
 		if (!hasStartedInitialUpdate) {
 			Selectable.Freeze ();
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "GET SOME PIECES";
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "";
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(startPicking);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			hasStartedInitialUpdate = true;
 			targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
+		}
+
+		if (TouchInput.isTouchBegin ()) {
+			startPicking ();
 		}
 
 	}
@@ -170,9 +174,14 @@ public class TurnManager : MonoBehaviour {
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			if (Selectable.GetSelection()) {
+				Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
+				rig.useGravity = true;
+			}
 			Selectable.Thaw ();
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
+
 			Selectable.Deselect();
 			return;
 		}
@@ -251,7 +260,7 @@ public class TurnManager : MonoBehaviour {
 
 			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
-			if (TouchInput.tapDelta() != Vector3.zero) {
+			if (TouchInput.isTouchBegin()) {
 				gameButton.SetActive(false);
 			}
 

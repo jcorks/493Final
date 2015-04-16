@@ -174,17 +174,23 @@ public class TouchInput : MonoBehaviour {
 	
 	}
 
-	bool isTouchBegin() {
+	static public bool isTouchBegin() {
 		if (touchEnabled) {
-			return touchInstance.phase == TouchPhase.Began;
+			if ((ios_device && Input.touchCount > 0) || android_device)
+				return touchInstance.phase == TouchPhase.Began;
+			else 
+				return false;
 		} 
 		return Input.GetMouseButtonDown (0);
 	}
 
 
-	bool isTouchEnd() {
+	static public bool isTouchEnd() {
 		if (touchEnabled) {
-			return touchInstance.phase == TouchPhase.Ended;
+			if ((ios_device && Input.touchCount > 0) || android_device)
+				return touchInstance.phase == TouchPhase.Ended;
+			else 
+				return false;
 		} 
 		return Input.GetMouseButtonUp (0);
 	}
@@ -200,7 +206,7 @@ public class TouchInput : MonoBehaviour {
 
 	static public Vector3 tapDelta() {
 		if (touchEnabled) {
-			return touchInstance.deltaPosition;
+			return touchInstance.deltaPosition * (android_device ? 6f : 1f);
 		} else {
 			return pointerDelta;
 		}

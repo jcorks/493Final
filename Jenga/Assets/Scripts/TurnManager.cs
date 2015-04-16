@@ -119,7 +119,9 @@ public class TurnManager : MonoBehaviour {
 		
 		
 		transform.position = Vector3.Lerp (transform.position, targetPos, .1f);
-		
+		/*GetComponentInChildren<Text> ().text = "(" + Input.acceleration.x + ", " 
+			                                       + Input.acceleration.y + ", "
+									               + Input.acceleration.z + ")"; */
 	}
 	
 	
@@ -229,9 +231,7 @@ public class TurnManager : MonoBehaviour {
 
 
 				UserDragPiece ();
-			} else {
-
-			}
+			} 
 		}
 	}
 
@@ -245,8 +245,44 @@ public class TurnManager : MonoBehaviour {
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedReplaceUpdate = true;
 			piece.GetComponent<Rigidbody> ().freezeRotation = false;
+
+
+			// Get top of tower position
+			Vector3 topPiecePos = Vector3.zero;;
+			float top = -999;
+			GameObject topPiece = null;
+			GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
+			foreach(GameObject o in pieces) {
+				if (o.transform.position.y > top) {
+					topPiece = o;
+					top = o.transform.position.y;
+
+				}
+			}
+
+
+			Vector3 pieceRot = selectedOriginalRotation;
+			targetPos = topPiece.transform.position 
+			 + Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
+			transform.LookAt (topPiece.transform.position);
+			selectedOriginalPosition = topPiece.transform.position;
+
+
+
 		}
 
+		transform.LookAt (selectedOriginalPosition);
+
+		if (TouchInput.tap ()) {
+			var dir = Selectable.GetSelection().GetComponent<JengaBlockScript> ().direction;
+			if (dir == JengaBlockScript.Direction.FacingWest)
+				dragPos -= TouchInput.tapDelta();
+			else 
+				dragPos += TouchInput.tapDelta();
+			
+			
+			UserReplacePiece ();
+		} 
 	}
 	
 	// Takes the currently selected piece and prepares it for movement.
@@ -269,7 +305,27 @@ public class TurnManager : MonoBehaviour {
 
 		phase = p;
 	}
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	////// User updates
+
+	// put logic here for re placing the piece.
+	// need to initially on first call place the block properly
+	void UserReplacePiece() {
+
+	}
 	
 	
 	// Put logic here for dragging the piece

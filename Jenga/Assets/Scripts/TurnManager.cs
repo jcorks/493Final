@@ -53,6 +53,7 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+	bool hasStartedTurnOver = false;
 	bool hasStartedGameOver = false;
 
 
@@ -60,6 +61,7 @@ public class TurnManager : MonoBehaviour {
 	GameObject gameText;
 	
 	float dragTimer = 0f;
+	float stablizeTimer = 0f;
 	public Material DragMaterial;
 	
 	TurnPhase phase = TurnPhase.InitialPhase;
@@ -123,6 +125,9 @@ public class TurnManager : MonoBehaviour {
 	}
 	
 	void FixedUpdate() {
+
+
+		
 		
 		// First bind values to 0 - 360 to prevent false lerping
 		
@@ -342,15 +347,34 @@ public class TurnManager : MonoBehaviour {
 	}
 
 	void TurnOverUpdate() {
+		if (!hasStartedTurnOver) {
+
+
+
+			Selectable.Thaw ();
+			ResetSelected ();
+			Selectable.Freeze ();
+			hasStartedTurnOver = true;
+			stablizeTimer = 0f;
+			gameButton.SetActive(false);
+		}
+		stablizeTimer += Time.deltaTime;
+		if (stablizeTimer < .5f)
+			return;
+
+
+
+		// wait for stabliztion;
+		if (!isStablized ())
+			return;
+
 		round++;
 		curPlayer++;
 		if (curPlayer == numPlayers) {
 			curPlayer = 0;
 		}
 		Debug.Log ("TURNS OVER NOW");
-		Selectable.Thaw ();
-		ResetSelected ();
-		Selectable.Freeze ();
+
 		changePhase (TurnPhase.InitialPhase);
 	}
 
@@ -365,6 +389,7 @@ public class TurnManager : MonoBehaviour {
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
+			gameText.GetComponent<TextMesh>().text = "";
 		}
 
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
@@ -390,10 +415,24 @@ public class TurnManager : MonoBehaviour {
 		changePhase (TurnPhase.TurnOver);
 	}
 
+	public bool isStablized() {
+		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
+		bool sleep = true;
+		foreach (GameObject o in blocks) {
+			if (!o.GetComponent<Rigidbody>().IsSleeping()) {
+				sleep = false;
+				break;
+			}
+		}
+		return sleep;
+
+	}
+
 	public void ResetSelected() {
 		if (Selectable.GetSelection()) {
 			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
 			rig.useGravity = true;
+			Debug.Log ("Reset gravity");
 		}
 
 		Selectable.Deselect();
@@ -405,6 +444,7 @@ public class TurnManager : MonoBehaviour {
 		hasStartedReplaceUpdate = false;
 		hasStartedGameOver = false;
 		hasStartedInitialUpdate = false;
+		hasStartedTurnOver = false;
 		gameButton.SetActive (true);
 
 		phase = p;

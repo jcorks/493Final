@@ -67,7 +67,7 @@ public class TurnManager : MonoBehaviour {
 
 
 	float turnOverPieceRadius = 1f;
-	static int round = 0;
+	public static int round = 0;
 
 
 	// Use this for initialization
@@ -80,6 +80,7 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+		round = 0;
 
 		GetComponentInChildren<GameOverVisual>().DisableVisual();
 	}
@@ -232,6 +233,7 @@ public class TurnManager : MonoBehaviour {
 			buttonCallback.AddListener(UndoPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			piece.GetComponent<Rigidbody>().useGravity = false;
+			piece.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 			dragTimer = 0f;
 		}
 		dragTimer += Time.deltaTime;
@@ -261,11 +263,12 @@ public class TurnManager : MonoBehaviour {
 
 			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
-			if (TouchInput.isTouchBegin()) {
-				gameButton.SetActive(false);
-			}
+
 
 			if (TouchInput.tap ()) {
+					if (TouchInput.tapDelta() != Vector3.zero)
+						gameButton.SetActive(false);
+
 					if (dir == JengaBlockScript.Direction.FacingWest)
 						dragPos -= TouchInput.tapDelta();
 					else 
@@ -316,7 +319,7 @@ public class TurnManager : MonoBehaviour {
 					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
+			targetPos = topPiece.transform.position +  new Vector3 (-.3f*radius, .6f*radius, -.3f*radius);
 			transform.LookAt (topPiece.transform.position);
 			selectedOriginalPosition = topPiece.transform.position;
 
@@ -341,6 +344,31 @@ public class TurnManager : MonoBehaviour {
 	}
 
 	void TurnOverUpdate() {
+
+		if (!hasStartedTurnOver) {
+
+			targetPos = new Vector3(-.18f*radius, .8f*radius, -.18f*radius) +
+				GameObject.FindGameObjectWithTag ("Tower").transform.position;
+
+			Selectable.Thaw ();
+			ResetSelected ();
+			Selectable.Freeze ();
+			hasStartedTurnOver = true;
+			stablizeTimer = 0f;
+			gameButton.SetActive(false);
+		}
+		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
+
+		stablizeTimer += Time.deltaTime;
+		if (stablizeTimer < .5f)
+			return;
+
+
+
+		// wait for stabliztion;
+		if (!isStablized ())
+			return;
+
 		round++;
 		curPlayer++;
 		if (curPlayer == numPlayers) {
@@ -385,7 +413,33 @@ public class TurnManager : MonoBehaviour {
 	public void PlacedPiece() {
 		changePhase (TurnPhase.TurnOver);
 	}
-	
+
+
+	public bool isStablized() {
+		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
+		bool sleep = true;
+		foreach (GameObject o in blocks) {
+			if (!o.GetComponent<Rigidbody>().IsSleeping()) {
+				sleep = false;
+				break;
+			}
+		}
+		return sleep;
+
+	}
+
+	public void ResetSelected() {
+		if (Selectable.GetSelection()) {
+			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
+			rig.useGravity = true;
+			rig.freezeRotation = false;
+			rig.constraints = RigidbodyConstraints.None;
+			Debug.Log ("Reset gravity");
+		}
+
+		Selectable.Deselect();
+	}
+
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;

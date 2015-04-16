@@ -53,6 +53,7 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+	bool hasStartedTurnOver = false;
 	bool hasStartedGameOver = false;
 
 
@@ -60,6 +61,7 @@ public class TurnManager : MonoBehaviour {
 	GameObject gameText;
 	
 	float dragTimer = 0f;
+	float stabilizeTimer = 0f;
 	public Material DragMaterial;
 	
 	TurnPhase phase = TurnPhase.InitialPhase;
@@ -354,13 +356,13 @@ public class TurnManager : MonoBehaviour {
 			ResetSelected ();
 			Selectable.Freeze ();
 			hasStartedTurnOver = true;
-			stablizeTimer = 0f;
+			stabilizeTimer = 0f;
 			gameButton.SetActive(false);
 		}
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
 
-		stablizeTimer += Time.deltaTime;
-		if (stablizeTimer < .5f)
+		stabilizeTimer += Time.deltaTime;
+		if (stabilizeTimer < .5f)
 			return;
 
 

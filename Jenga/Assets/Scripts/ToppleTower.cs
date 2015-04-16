@@ -24,7 +24,8 @@ public class ToppleTower : MonoBehaviour {
 		// greater than the number in the previous round.
 		if (num_touching_table > 3 && !game_over) {
 			Debug.Log ("GAME OVER");
-			soundEffect.Play();
+			if (MusicController.soundEffectsEnabled)
+				soundEffect.Play();
 			game_over = true;
 			if (GameObject.FindObjectOfType<TurnManager>())
 				GameObject.FindObjectOfType<TurnManager>().GameOver();

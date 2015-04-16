@@ -20,8 +20,11 @@ public class TurnManager : MonoBehaviour {
 
 	// The highest piece in the land
 	Vector3 topPiecePos;
+	// the rotation of the top piece
+	Vector3 topPieceRotation;
 	// The number of blocks on the top
 	int blocks_on_top;
+
 
 	public float radius = .17f;
 	public float degreeDelta = 45f;
@@ -50,6 +53,7 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+	bool hasStartedTurnOver = false;
 	bool hasStartedGameOver = false;
 
 
@@ -57,6 +61,7 @@ public class TurnManager : MonoBehaviour {
 	GameObject gameText;
 	
 	float dragTimer = 0f;
+	float stablizeTimer = 0f;
 	public Material DragMaterial;
 	
 	TurnPhase phase = TurnPhase.InitialPhase;
@@ -120,6 +125,9 @@ public class TurnManager : MonoBehaviour {
 	}
 	
 	void FixedUpdate() {
+
+
+		
 		
 		// First bind values to 0 - 360 to prevent false lerping
 		
@@ -151,14 +159,15 @@ public class TurnManager : MonoBehaviour {
 	
 	void InitialPhaseUpdate() {
 		if (!hasStartedInitialUpdate) {
-			Selectable.Freeze ();
+
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "GET SOME PIECES";
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(startPicking);
-			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			gameButton.SetActive(false);
 			hasStartedInitialUpdate = true;
 			targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
+		}
+
+		if (TouchInput.isTouchBegin ()) {
+			startPicking ();
 		}
 
 	}
@@ -167,13 +176,19 @@ public class TurnManager : MonoBehaviour {
 	void ChoosePieceUpdate() {
 		if (!hasStartedChooseUpdate) {
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Pick Piece";
+			gameButton.SetActive(true);
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
+
+
 			Selectable.Thaw ();
+			ResetSelected();
+
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
-			Selectable.Deselect();
+
+
 			return;
 		}
 		
@@ -205,7 +220,8 @@ public class TurnManager : MonoBehaviour {
 		
 		targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 	}
-	
+
+
 	
 	void DragPieceUpdate() {
 		GameObject piece = Selectable.GetSelection();
@@ -251,7 +267,7 @@ public class TurnManager : MonoBehaviour {
 
 			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
-			if (TouchInput.tapDelta() != Vector3.zero) {
+			if (TouchInput.isTouchBegin()) {
 				gameButton.SetActive(false);
 			}
 
@@ -289,6 +305,7 @@ public class TurnManager : MonoBehaviour {
 				}
 			}
 			topPiecePos = topPiece.transform.position;
+			topPieceRotation = topPiece.transform.rotation.eulerAngles;
 			
 			// Get the number of pieces on highest layer
 			blocks_on_top = 0;
@@ -310,17 +327,19 @@ public class TurnManager : MonoBehaviour {
 			selectedOriginalPosition = topPiece.transform.position;
 
 
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Place!";
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(PlacedPiece);
+			gameButton.GetComponent<Button>().onClick = buttonCallback; 
+
+
 
 		}
 
 		transform.LookAt (selectedOriginalPosition);
 
 		if (TouchInput.tap ()) {
-			var dir = Selectable.GetSelection().GetComponent<JengaBlockScript> ().direction;
-			if (dir == JengaBlockScript.Direction.FacingWest)
-				dragPos -= TouchInput.tapDelta();
-			else 
-				dragPos += TouchInput.tapDelta();
+			dragPos += TouchInput.tapDelta();
 			
 			
 			UserReplacePiece ();
@@ -328,12 +347,35 @@ public class TurnManager : MonoBehaviour {
 	}
 
 	void TurnOverUpdate() {
+		if (!hasStartedTurnOver) {
+
+
+
+			Selectable.Thaw ();
+			ResetSelected ();
+			Selectable.Freeze ();
+			hasStartedTurnOver = true;
+			stablizeTimer = 0f;
+			gameButton.SetActive(false);
+		}
+		stablizeTimer += Time.deltaTime;
+		if (stablizeTimer < .5f)
+			return;
+
+
+
+		// wait for stabliztion;
+		if (!isStablized ())
+			return;
+
 		round++;
 		curPlayer++;
 		if (curPlayer == numPlayers) {
 			curPlayer = 0;
 		}
+		Debug.Log ("TURNS OVER NOW");
 
+		changePhase (TurnPhase.InitialPhase);
 	}
 
 
@@ -347,6 +389,7 @@ public class TurnManager : MonoBehaviour {
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
 			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
+			gameText.GetComponent<TextMesh>().text = "";
 		}
 
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
@@ -367,13 +410,41 @@ public class TurnManager : MonoBehaviour {
 		gameText.GetComponent<TextMesh> ().text = "";
 		changePhase (TurnPhase.ChoosePiece);
 	}
-	
+
+	public void PlacedPiece() {
+		changePhase (TurnPhase.TurnOver);
+	}
+
+	public bool isStablized() {
+		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
+		bool sleep = true;
+		foreach (GameObject o in blocks) {
+			if (!o.GetComponent<Rigidbody>().IsSleeping()) {
+				sleep = false;
+				break;
+			}
+		}
+		return sleep;
+
+	}
+
+	public void ResetSelected() {
+		if (Selectable.GetSelection()) {
+			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
+			rig.useGravity = true;
+			Debug.Log ("Reset gravity");
+		}
+
+		Selectable.Deselect();
+	}
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
 		hasStartedGameOver = false;
+		hasStartedInitialUpdate = false;
+		hasStartedTurnOver = false;
 		gameButton.SetActive (true);
 
 		phase = p;
@@ -395,29 +466,59 @@ public class TurnManager : MonoBehaviour {
 
 
 	////// User updates
-
+	bool piece_has_teleported = false;
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
+	float fixed_height;
 	void UserReplacePiece() {
 		GameObject piece = Selectable.GetSelection();
+		var selected_piece_rotation = piece.transform.rotation.eulerAngles;
+		var selected_piece_rotation_upper_limit = selected_piece_rotation + new Vector3(0f, 0.01f, 0f);
+		var selected_piece_rotation_lower_limit = selected_piece_rotation - new Vector3(0f, 0.01f, 0f);
+
 		Vector3 new_position = topPiecePos;
-		new_position.x += 0.05f;
-		new_position.z += 0.05f;
-		if (blocks_on_top == 3) { // start new layer
-			new_position.y += 0.017f;
-		} else { // add to current highest layer
-			new_position.y += 0.003f;
+
+
+		if (!piece_has_teleported) {
+			new_position.x += 0.05f;
+			new_position.z += 0.05f;
+			if (blocks_on_top == 3) { // start new layer
+				new_position.y += 0.017f;
+				fixed_height = new_position.y;
+
+				//if (topPieceRotation < selected_piece_rotation_upper_limit && )
+
+			} else { // add to current highest layer
+				new_position.y += 0.003f;
+			}
+			piece.transform.position = new_position;
+			// Keep it from floating away if you're using a mouse
+			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
+
+			dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+
+			piece_has_teleported = true;
 		}
-		piece.transform.position = new_position;
 
-		// Keep it from floating away if you're using a mouse
-		piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
-
+		Debug.Log (dragPos);
 		// Get the camera's position to normalize piece movement
-		Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
-		                      Camera.main.WorldToScreenPoint(piece.transform.position).z);
+		//Vector2 dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
+		  //                    Camera.main.WorldToScreenPoint(piece.transform.position).z);
 
-		Vector3 block_location = piece.transform.position;
+		Vector3 drag_position = Camera.main.ScreenToWorldPoint(dragPos);
+		drag_position.y = fixed_height;
+
+		piece.transform.position = drag_position;
+		Debug.Log("UserReplacePiece()");
+
+//		Vector3 start_pos;
+
+
+
+
+/*		if(Input.GetKey(KeyCode.MouseDown)){
+			piece.transform.position = dragPos2;		
+		}*/
 
 
 

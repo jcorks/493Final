@@ -308,7 +308,7 @@ public class TurnManager : MonoBehaviour {
 	void GameOverUpdate() {
 		if (!hasStartedGameOver) {
 
-			targetPos = new Vector3(-.6f*radius, .6f*radius, -.6f*radius) +
+			targetPos = new Vector3(-.18f*radius, .8f*radius, -.18f*radius) +
 				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(endGame);

@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class AccelerometerInput : MonoBehaviour {
-	public float forceValue = .0001f; //1/10,000
+	float forceValue = 0.1f; //1/10,000
 	float movingThreshold = 0.1f;
 	// Use this for initialization
 	void Start () {
@@ -18,17 +18,20 @@ public class AccelerometerInput : MonoBehaviour {
 			forceVector.y = 0;
 		if (forceVector.z < movingThreshold)
 			forceVector.z = 0;
-		forceValue /= 10000;
+		forceVector *= forceValue;
 		
 		this.gameObject.GetComponent<Rigidbody>().AddForce(forceVector, ForceMode.Acceleration);
-		/*if (Input.GetKey(KeyCode.I)){
-			this.gameObject.GetComponent<Rigidbody>().AddForce(0,forceValue,0,ForceMode.Acceleration);
+		if (Input.GetKey(KeyCode.I)){
+			this.gameObject.GetComponent<Rigidbody>().AddForce(0,0,forceValue,ForceMode.Acceleration);
 		}
 		if (Input.GetKey(KeyCode.J)){
-			this.gameObject.GetComponent<Rigidbody>().AddForce(forceValue,0,0,ForceMode.Acceleration);
+			this.gameObject.GetComponent<Rigidbody>().AddForce(-forceValue,0,0,ForceMode.Acceleration);
 		}
 		if (Input.GetKey(KeyCode.K)){
-			this.gameObject.GetComponent<Rigidbody>().AddForce(-forceValue,0,0,ForceMode.Acceleration);
-		}*/
+			this.gameObject.GetComponent<Rigidbody>().AddForce(0,0,-forceValue,ForceMode.Acceleration);
+		}
+		if (Input.GetKey(KeyCode.L)){
+			this.gameObject.GetComponent<Rigidbody>().AddForce(forceValue,0,0,ForceMode.Acceleration);
+		}
 	}
 }

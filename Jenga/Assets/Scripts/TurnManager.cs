@@ -41,6 +41,7 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+
 	GameObject gameButton;
 	
 	float dragTimer = 0f;
@@ -89,6 +90,7 @@ public class TurnManager : MonoBehaviour {
 			ReplacePieceUpdate();
 			break;
 		case TurnPhase.TurnOver:
+			TurnOverUpdate();
 			break;
 		}
 		
@@ -241,10 +243,10 @@ public class TurnManager : MonoBehaviour {
 	void ReplacePieceUpdate() {
 		if (!hasStartedReplaceUpdate) {
 			GameObject piece = Selectable.GetSelection();
-			piece.GetComponent<Rigidbody>().useGravity = true;
+			//piece.GetComponent<Rigidbody>().useGravity = true;
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedReplaceUpdate = true;
-			piece.GetComponent<Rigidbody> ().freezeRotation = false;
+			//piece.GetComponent<Rigidbody> ().freezeRotation = false;
 
 
 			// Get top of tower position
@@ -262,8 +264,7 @@ public class TurnManager : MonoBehaviour {
 
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position 
-			 + Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
+			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
 			transform.LookAt (topPiece.transform.position);
 			selectedOriginalPosition = topPiece.transform.position;
 
@@ -284,7 +285,12 @@ public class TurnManager : MonoBehaviour {
 			UserReplacePiece ();
 		} 
 	}
-	
+
+	void TurnOverUpdate() {
+		round++;
+
+	}
+
 	// Takes the currently selected piece and prepares it for movement.
 	public void FinalizePiece() {
 		changePhase(TurnPhase.DragPiece);
@@ -378,7 +384,7 @@ public class TurnManager : MonoBehaviour {
 		RaycastHit hit;
 		if (!pieceRig.SweepTest(new Vector3(0, 1, 0), out hit,  1) ||
 		    !pieceRig.SweepTest(new Vector3(0, -1, 0), out hit, 1)) {
-			Debug.Log ("TURNS OVER");
+
 			changePhase(TurnPhase.ReplacePiece);
 		}
 		

@@ -74,7 +74,7 @@ public class TurnManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		gameButton = GameObject.FindObjectOfType<Button> ().gameObject;
+		gameButton = GameObject.Find("Button");
 		gameText = GameObject.FindObjectOfType<TextMesh> ().gameObject;
 		GameObject tower = GameObject.FindGameObjectWithTag ("Tower");
 		if (tower == null) {
@@ -450,6 +450,8 @@ public class TurnManager : MonoBehaviour {
 		hasStartedGameOver = false;
 		hasStartedTurnOver = false;
 		hasStartedInitialUpdate = false;
+		piece_has_teleported = false;
+
 		gameButton.SetActive (true);
 
 		phase = p;

@@ -20,6 +20,8 @@ public class BlockHitSound : MonoBehaviour {
 		if (timer < .5f)
 			return;
 		if (other.relativeVelocity.magnitude > threshold){
+			if (!MusicController.soundEffectsEnabled)
+				return;
 			soundEffect.Play();
 			soundEffect.volume = other.relativeVelocity.magnitude/1.5f;
 			soundEffect.pitch = Random.Range(0.75f,1.1f);

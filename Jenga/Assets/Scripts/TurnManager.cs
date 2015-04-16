@@ -370,6 +370,7 @@ public class TurnManager : MonoBehaviour {
 		new_position.y += 0.017f;
 		piece.transform.position = new_position;
 
+
 	}
 	
 	

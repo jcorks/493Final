@@ -26,6 +26,24 @@ public class TouchInput : MonoBehaviour {
 	static Vector3 lastPointer;
 	static Vector3 pointerDelta;
 
+
+	// Device specific stuff
+	static bool android_device = false;
+	static bool ios_device = false;
+	static bool probably_a_computer = false;
+	void Awake() {
+		if (Application.platform == RuntimePlatform.Android) {
+			Debug.Log ("It's Android!");
+			android_device = true;
+		} else if (Application.platform == RuntimePlatform.IPhonePlayer) {
+			Debug.Log ("It's an iPhone!");
+			ios_device = true;
+		} else {
+			Debug.Log ("It's Something Else!");
+			probably_a_computer = true;
+		}
+	}
+
 	void Start() {
 		touchEnabled = Input.touchSupported;
 	}
@@ -132,7 +150,11 @@ public class TouchInput : MonoBehaviour {
 
 
 		if (touchEnabled) {
-			touchInstance = Input.GetTouch (0);
+			if (Input.touchCount >= 1) {
+				touchInstance = Input.GetTouch (0);
+				Debug.Log("UpdateTouch()");
+			}
+
 			/*
 			if (Input.touchCount == 2) {
 
@@ -161,6 +183,12 @@ public class TouchInput : MonoBehaviour {
 
 	bool isTouchBegin() {
 		if (touchEnabled) {
+			if (ios_device && Input.touchCount == 0) {
+				Debug.Log("isTouchBegin() *FALSE");
+				return false;
+			} else if (ios_device && Input.touchCount >= 1) {
+				Debug.Log("isTouchBegin() TRUE");
+			}
 			return touchInstance.phase == TouchPhase.Began;
 		} 
 		return Input.GetMouseButtonDown (0);
@@ -169,6 +197,9 @@ public class TouchInput : MonoBehaviour {
 
 	bool isTouchEnd() {
 		if (touchEnabled) {
+			if (touchInstance.phase == TouchPhase.Ended) {
+				Debug.Log("isTouchEnd()");
+			}
 			return touchInstance.phase == TouchPhase.Ended;
 		} 
 		return Input.GetMouseButtonUp (0);
@@ -177,6 +208,12 @@ public class TouchInput : MonoBehaviour {
 
 	static Vector2 getTouchPos() {
 		if (touchEnabled) {
+			if (ios_device && Input.touchCount == 0) {
+				Debug.Log("getTouchPos() Nothing touching screen");
+				return Vector3.zero;
+			} else if (ios_device && Input.touchCount >= 1) {
+				Debug.Log("getTouchPos() "+Input.touchCount+" fingers on the screen");
+			}
 			return touchInstance.position;
 		}
 		return Input.mousePosition;
@@ -186,6 +223,12 @@ public class TouchInput : MonoBehaviour {
 	static public Vector3 tapDelta() {
 		if (touchEnabled) {
 
+			if (ios_device && Input.touchCount == 0) {
+				return Vector3.zero;
+				Debug.Log("tapDelta() nothing touching!");
+			} else if (ios_device && Input.touchCount >= 1) {
+				Debug.Log("tapDelta() "+Input.touchCount+" things touching");
+			}
 			return touchInstance.deltaPosition;
 		} else {
 			return pointerDelta;

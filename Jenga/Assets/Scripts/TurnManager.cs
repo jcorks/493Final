@@ -11,6 +11,7 @@ public class TurnManager : MonoBehaviour {
 		DragPiece,
 		ReplacePiece,
 		TurnOver,
+		GameOver
 		
 	};
 	
@@ -41,6 +42,9 @@ public class TurnManager : MonoBehaviour {
 	bool hasStartedChooseUpdate = false;
 	bool hasStartedDragging = false;
 	bool hasStartedReplaceUpdate = false;
+	bool hasStartedGameOver = false;
+
+
 	GameObject gameButton;
 	
 	float dragTimer = 0f;
@@ -63,6 +67,8 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+
+		GetComponentInChildren<GameOverVisual>().DisableVisual();
 	}
 	
 	// Update is called once per frame
@@ -89,12 +95,19 @@ public class TurnManager : MonoBehaviour {
 			ReplacePieceUpdate();
 			break;
 		case TurnPhase.TurnOver:
+			TurnOverUpdate();
+			break;
+		case TurnPhase.GameOver:
+			GameOverUpdate();
 			break;
 		}
 		
 		
 	}
-	
+
+	public void GameOver() {
+		changePhase (TurnPhase.GameOver);
+	}
 	
 	void FixedUpdate() {
 		
@@ -241,10 +254,10 @@ public class TurnManager : MonoBehaviour {
 	void ReplacePieceUpdate() {
 		if (!hasStartedReplaceUpdate) {
 			GameObject piece = Selectable.GetSelection();
-			piece.GetComponent<Rigidbody>().useGravity = true;
+			//piece.GetComponent<Rigidbody>().useGravity = true;
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedReplaceUpdate = true;
-			piece.GetComponent<Rigidbody> ().freezeRotation = false;
+			//piece.GetComponent<Rigidbody> ().freezeRotation = false;
 
 
 			// Get top of tower position
@@ -262,8 +275,7 @@ public class TurnManager : MonoBehaviour {
 
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position 
-			 + Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
+			targetPos = topPiece.transform.position +  new Vector3 (-.6f*radius, .3f*radius, -.6f*radius);
 			transform.LookAt (topPiece.transform.position);
 			selectedOriginalPosition = topPiece.transform.position;
 
@@ -284,7 +296,23 @@ public class TurnManager : MonoBehaviour {
 			UserReplacePiece ();
 		} 
 	}
-	
+
+	void TurnOverUpdate() {
+		round++;
+
+	}
+
+
+	void GameOverUpdate() {
+		if (!hasStartedGameOver) {
+			var buttonCallback = new Button.ButtonClickedEvent();
+			buttonCallback.AddListener(endGame);
+			gameButton.GetComponent<Button>().onClick = buttonCallback;
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
+			GetComponentInChildren<GameOverVisual>().EnableVisual();
+		}
+	}
+
 	// Takes the currently selected piece and prepares it for movement.
 	public void FinalizePiece() {
 		changePhase(TurnPhase.DragPiece);
@@ -301,12 +329,15 @@ public class TurnManager : MonoBehaviour {
 		hasStartedChooseUpdate = false;
 		hasStartedDragging = false;
 		hasStartedReplaceUpdate = false;
+		hasStartedGameOver = false;
 		gameButton.SetActive (true);
 
 		phase = p;
 	}
 
-
+	void endGame() {
+		Application.LoadLevel ("MainMenu");
+	}
 
 
 
@@ -378,7 +409,7 @@ public class TurnManager : MonoBehaviour {
 		RaycastHit hit;
 		if (!pieceRig.SweepTest(new Vector3(0, 1, 0), out hit,  1) ||
 		    !pieceRig.SweepTest(new Vector3(0, -1, 0), out hit, 1)) {
-			Debug.Log ("TURNS OVER");
+
 			changePhase(TurnPhase.ReplacePiece);
 		}
 		

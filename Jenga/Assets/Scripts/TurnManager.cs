@@ -417,14 +417,35 @@ public class TurnManager : MonoBehaviour {
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly
 	float fixed_height;
+	bool facing_same_direction = false;
 	void UserReplacePiece() {
+		
 		GameObject piece = Selectable.GetSelection();
 		var selected_piece_rotation = piece.transform.rotation.eulerAngles;
-		var selected_piece_rotation_upper_limit = selected_piece_rotation + new Vector3(0f, 0.01f, 0f);
-		var selected_piece_rotation_lower_limit = selected_piece_rotation - new Vector3(0f, 0.01f, 0f);
+		var selected_piece_rotation_upper_limit = selected_piece_rotation + new Vector3(0f, 6f, 0f);
+		var selected_piece_rotation_lower_limit = selected_piece_rotation - new Vector3(0f, 6f, 0f);
+		if (selected_piece_rotation_lower_limit.y < 0f) {
+			selected_piece_rotation_lower_limit.y += 360f;
+		}
+
+		var _180_off_top_piece_rotation = piece.transform.rotation.eulerAngles;
+		//Debug.Log("Before " + _180_off_top_piece_rotation.y);
+		_180_off_top_piece_rotation.y += 180f;
+		//Debug.Log("After " + _180_off_top_piece_rotation.y);
+		var _180_off_top_piece_rotation_upper_limit = _180_off_top_piece_rotation + new Vector3(0f, 6f, 0f);
+		var _180_off_top_piece_rotation_lower_limit = _180_off_top_piece_rotation - new Vector3(0f, 6f, 0f);
+		if (_180_off_top_piece_rotation_lower_limit.y < 0f) {
+		//	Debug.Log("LESS THAN ZERO");
+			_180_off_top_piece_rotation_lower_limit.y += 360f;
+		}
+
+		/*Debug.Log("Upper limit same rotation " + selected_piece_rotation_upper_limit);
+		Debug.Log("Lower limit same rotation " + selected_piece_rotation_lower_limit);
+		
+		Debug.Log("Upper limit opposite rotation " + _180_off_top_piece_rotation_upper_limit.y);
+		Debug.Log("Lower limit opposite rotation " + _180_off_top_piece_rotation_lower_limit.y);*/
 
 		Vector3 new_position = topPiecePos;
-
 
 		if (!piece_has_teleported) {
 			new_position.x += 0.05f;
@@ -433,19 +454,37 @@ public class TurnManager : MonoBehaviour {
 				new_position.y += 0.017f;
 				fixed_height = new_position.y;
 
-				//if (topPieceRotation < selected_piece_rotation_upper_limit && )
-
+				if (topPieceRotation.y < selected_piece_rotation_upper_limit.y &&
+					topPieceRotation.y > selected_piece_rotation_lower_limit.y) {
+						facing_same_direction = true;
+						Vector3 tpr = topPieceRotation;
+						tpr.y += 90f;
+						piece.transform.rotation = Quaternion.Euler(tpr);
+						Debug.Log("they're facing the SAME direction1");
+				} else if (topPieceRotation.y < _180_off_top_piece_rotation_upper_limit.y &&
+				  		   topPieceRotation.y > _180_off_top_piece_rotation_lower_limit.y) {
+							// they're facing the same direction
+							Vector3 tpr = topPieceRotation;
+							tpr.y += 90f;
+							//piece.transform.Rotate(tpr);
+					piece.transform.rotation = Quaternion.Euler(tpr);
+							Debug.Log("they're facing the SAME direction2");
+				} else {
+					facing_same_direction = false;
+					
+					Debug.Log("they're facing the OPPOSITE direction");
+				}
 			} else { // add to current highest layer
 				new_position.y += 0.003f;
 			}
-			piece.transform.position = new_position;
-			// Keep it from floating away if you're using a mouse
+					// Keep it from floating away if you're using a mouse
 			piece.GetComponent<Rigidbody> ().velocity = Vector3.zero;
-
 			dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
-
 			piece_has_teleported = true;
 		}
+		piece.transform.position = new_position;
+
+		
 
 		Debug.Log (dragPos);
 		// Get the camera's position to normalize piece movement
@@ -457,60 +496,6 @@ public class TurnManager : MonoBehaviour {
 
 		piece.transform.position = drag_position;
 		Debug.Log("UserReplacePiece()");
-
-//		Vector3 start_pos;
-
-
-
-
-/*		if(Input.GetKey(KeyCode.MouseDown)){
-			piece.transform.position = dragPos2;		
-		}*/
-
-
-
-		/*var dir = piece.GetComponent<JengaBlockScript> ().direction;
-		if (dir == JengaBlockScript.Direction.FacingWest) {
-			dragPos -= TouchInput.tapDelta();	
-		} else {
-			dragPos += TouchInput.tapDelta();
-		}
-
-		if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
-			//var original_z = piece.transform.position.z;
-
-			dragPos.z = original_depth; // fix the z coordinate when viewing this face
-			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (dragPos);
-			Vector3 pos = this.transform.position;
-			pos.x = mousePos3D.x;
-			pos.y = piece.transform.position.y;
-			pos.z = original_depth;
-			piece.transform.position = pos;
-		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
-			var left_right = dragPos.x;
-			var back_forth = dragPos.z;
-			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, back_forth, original_depth));
-			Vector3 pos = -(this.transform.position);
-			pos.x = original_depth;
-			pos.y = piece.transform.position.y;
-			pos.z = mousePos3D.z;
-			piece.transform.position = pos;
-		}*/
-
-
-
-		// Have the user place it wherever they want
-		
-		//Vector3 mousePos2D = Input.mousePosition;
-		
-		/*mousePos2D.y = piece.transform.position.y;
-		Vector3 mousePos2D = dragPos;
-		Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (mousePos2D);*/
-
-
-
-
-		// ********** DON'T DELETE **********
 		// changePhase(TurnPhase.TurnOver);
 	}
 	

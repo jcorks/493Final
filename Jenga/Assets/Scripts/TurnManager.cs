@@ -59,8 +59,11 @@ public class TurnManager : MonoBehaviour {
 
 	GameObject gameButton;
 	GameObject gameText;
+	GameObject DragHelperSprite;
+	GameObject ReplaceHelperSprite;
 	
 	float dragTimer = 0f;
+	float replaceTimer = 0f;
 	float stabilizeTimer = 0f;
 	public Material DragMaterial;
 	
@@ -82,6 +85,8 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+		DragHelperSprite = GameObject.Find ("DragHelper");
+		ReplaceHelperSprite = GameObject.Find ("ReplaceHelper");
 		round = 0;
 
 		GetComponentInChildren<GameOverVisual>().DisableVisual();
@@ -178,15 +183,13 @@ public class TurnManager : MonoBehaviour {
 			var buttonCallback = new Button.ButtonClickedEvent();
 			buttonCallback.AddListener(FinalizePiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback;
-			if (Selectable.GetSelection()) {
-				Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
-				rig.useGravity = true;
-			}
+
 			Selectable.Thaw ();
+			ResetSelected();
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
 
-			Selectable.Deselect();
+
 			return;
 		}
 		
@@ -236,6 +239,7 @@ public class TurnManager : MonoBehaviour {
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 			piece.GetComponent<Rigidbody>().useGravity = false;
 			piece.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+			DragHelperSprite.SetActive(true);
 			dragTimer = 0f;
 		}
 		dragTimer += Time.deltaTime;
@@ -244,15 +248,21 @@ public class TurnManager : MonoBehaviour {
 		targetPos = selectedOriginalPosition + 
 			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
 		transform.LookAt (selectedOriginalPosition);
-		
+
+		updateDragHelper ();
 		
 		if (dragTimer > 1.4f) {
 			var dir = piece.GetComponent<JengaBlockScript> ().direction;
 			if (!hasStartedDragging) {
 				//dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+
+
+
 				dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 				                      Camera.main.WorldToScreenPoint(piece.transform.position).y);
 				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+
+
 
 				if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
 					original_depth = piece.transform.position.z;
@@ -331,12 +341,17 @@ public class TurnManager : MonoBehaviour {
 			buttonCallback.AddListener(PlacedPiece);
 			gameButton.GetComponent<Button>().onClick = buttonCallback; 
 
+			replaceTimer = 0f;
 
 
 		}
-
 		transform.LookAt (selectedOriginalPosition);
+		replaceTimer += Time.deltaTime;
+		if (replaceTimer < 1f)
+			return;
+		ReplaceHelperSprite.SetActive (true);
 
+		updateReplaceHelper ();
 		if (TouchInput.tap ()) {
 			dragPos += TouchInput.tapDelta();
 			
@@ -416,6 +431,23 @@ public class TurnManager : MonoBehaviour {
 		changePhase (TurnPhase.TurnOver);
 	}
 
+	void updateDragHelper() {
+		DragHelperSprite.transform.position = Selectable.GetSelection().transform.position + 
+			(DragHelperSprite.transform.rotation * new Vector3(0f, 0f, -.03f));
+		DragHelperSprite.transform.localScale = new Vector3 (
+			.01f*(1f + .3f *Mathf.Sin (3*dragTimer)), 
+			.01f*(1f + .3f *Mathf.Cos (3*dragTimer)), 1f);
+	}
+
+	void updateReplaceHelper() {
+		ReplaceHelperSprite.transform.position = Selectable.GetSelection().transform.position + 
+			(new Vector3(0f, .01f, 0f));
+		//ReplaceHelperSprite.transform.rotation = 
+		ReplaceHelperSprite.transform.localScale = new Vector3 (
+			.02f*(1f + .3f *Mathf.Sin (3*replaceTimer)), 
+			.02f*(1f + .3f *Mathf.Cos (3*replaceTimer)), 1f);
+	}
+
 
 	public bool isStablized() {
 		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
@@ -452,6 +484,8 @@ public class TurnManager : MonoBehaviour {
 		hasStartedInitialUpdate = false;
 		piece_has_teleported = false;
 
+		DragHelperSprite.SetActive (false);
+		ReplaceHelperSprite.SetActive (false);
 		gameButton.SetActive (true);
 
 		phase = p;

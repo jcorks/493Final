@@ -498,8 +498,8 @@ public class TurnManager : MonoBehaviour {
 					placement_rotation = 90f;
 				}
 			}
-			new_position.x += 0.05f;
-			new_position.z += 0.05f;
+			new_position.x = 0.05408994f;
+			new_position.z = 0.1280344f;
 			if (blocks_on_top == 3) { // start new layer
 				new_position.y += 0.02f;
 				fixed_height = new_position.y;

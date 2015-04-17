@@ -14,15 +14,6 @@ public class PopulateHighscoreList : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-	
-	void FixedUpdate(){
 		info = GetComponent<Text>();
 		List<Scores> names_and_scores = HighScoreManager._instance.GetHighScore();
 		foreach (Scores scores_pair in names_and_scores){
@@ -31,5 +22,19 @@ public class PopulateHighscoreList : MonoBehaviour {
 			else 
 				info.text += "\n" + scores_pair.score;
 		}
+
+	}
+	
+	// Update is called once per frame
+	void Update () {
+	
+	}
+	
+	public void clearList(){
+		if (type == ScoreType.name){
+			info.text = "Name\n";
+		}
+		else
+			info.text = "Score\n";
 	}
 }

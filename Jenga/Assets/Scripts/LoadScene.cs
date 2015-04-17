@@ -73,6 +73,12 @@ public class LoadScene : MonoBehaviour {
 		Application.LoadLevel("HighscoresList");
 	}
 	
+	public void loadHighscoreSave(){
+		if (MusicController.soundEffectsEnabled)
+			buttonSound.Play();
+		Application.LoadLevel("HighscoresSave");
+	}
+	
 	public void loadQuit(){
 		if (MusicController.soundEffectsEnabled)
 			buttonSound.Play();

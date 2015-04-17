@@ -6,7 +6,7 @@ public class PlayerSelect : MonoBehaviour {
 	
 	// Use this for initialization
 	void Start () {
-		num_players = 0;
+		num_players = 1;
 	}
 	
 	// Update is called once per frame

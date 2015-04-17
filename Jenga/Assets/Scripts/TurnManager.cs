@@ -212,6 +212,11 @@ public class TurnManager : MonoBehaviour {
 			hasStartedChooseUpdate = true;
 
 
+			// disable selection of top 2 rows
+			updateTopInfo();
+			Selectable.CriterionY(topPiecePos.y - .025f);
+
+
 			return;
 		}
 		
@@ -291,8 +296,6 @@ public class TurnManager : MonoBehaviour {
 			}
 
 
-			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
-
 
 
 			if (TouchInput.tap ()) {
@@ -319,32 +322,8 @@ public class TurnManager : MonoBehaviour {
 
 
 			// Get top of tower position
-			topPiecePos = Vector3.zero;;
-			float top = -999;
-			GameObject topPiece = null;
-			GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
-			foreach(GameObject o in pieces) {
-				if (o.transform.position.y > top) {
-					topPiece = o;
-					top = o.transform.position.y;
-				}
-			}
-			topPiecePos = topPiece.transform.position;
-			topPieceRotation = topPiece.transform.rotation.eulerAngles;
+			updateTopInfo();
 
-
-
-			// Get the number of pieces on highest layer
-			blocks_on_top = 0;
-			foreach(GameObject o in pieces) {
-				// If the tower is tilted, the adjacent blocks might not have
-				// exactly the same y value
-				var upper_bound = topPiecePos.y + 0.01;
-				var lower_bound = topPiecePos.y - 0.01;
-				if (o.transform.position.y > lower_bound && o.transform.position.y < upper_bound) {
-					++blocks_on_top;
-				}
-			}
 			Debug.Log("There " + (blocks_on_top > 1 ? " are " : " is ") + blocks_on_top +
 					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
@@ -352,9 +331,9 @@ public class TurnManager : MonoBehaviour {
 
 
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position +  new Vector3 (-.5f*radius, .8f*radius, -.5f*radius);
-			transform.LookAt (topPiece.transform.position);
-			selectedOriginalPosition = topPiece.transform.position;
+			targetPos = topPiecePos +  new Vector3 (-.5f*radius, .8f*radius, -.5f*radius);
+			transform.LookAt (topPiecePos);
+			selectedOriginalPosition = topPiecePos	;
 
 			updateButton(ButtonCallback_PlacedPiece, "Place!");
 
@@ -368,11 +347,12 @@ public class TurnManager : MonoBehaviour {
 			return;
 		ReplaceHelperSprite.SetActive (true);
 
+
+
 		updateReplaceHelper ();
 		if (TouchInput.tap ()) {
 			dragPos += TouchInput.tapDelta();
-			
-			
+				
 			UserReplacePiece ();
 		} 
 	}
@@ -554,13 +534,47 @@ public class TurnManager : MonoBehaviour {
 	}
 
 
-
-
-
-
-
-
-
+	// sets the 
+	// topPiecePos 			(which contains the position of the highest piece)
+	// topPieceROtation 	(the rotation of the aforementioned piece)
+	// blocks_on_top		(the number of blcoks currently on the top of the tower);
+	void updateTopInfo() {
+		topPiecePos = Vector3.zero;;
+		float top = -999;
+		GameObject topPiece = null;
+		GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
+		foreach(GameObject o in pieces) {
+			if (o.transform.position.y > top) {
+				topPiece = o;
+				top = o.transform.position.y;
+			}
+		}
+		topPiecePos = topPiece.transform.position;
+		topPieceRotation = topPiece.transform.rotation.eulerAngles;
+		
+		
+		
+		// Get the number of pieces on highest layer
+		blocks_on_top = 0;
+		foreach(GameObject o in pieces) {
+			// If the tower is tilted, the adjacent blocks might not have
+			// exactly the same y value
+			var upper_bound = topPiecePos.y + 0.01;
+			var lower_bound = topPiecePos.y - 0.01;
+			if (o.transform.position.y > lower_bound && o.transform.position.y < upper_bound) {
+				++blocks_on_top;
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	////// User updates
 	/// Here is the logic for functiosn that require mouse-to-world dragging of objects
 	

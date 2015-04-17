@@ -59,8 +59,11 @@ public class TurnManager : MonoBehaviour {
 
 	GameObject gameButton;
 	GameObject gameText;
+	GameObject DragHelperSprite;
+	GameObject ReplaceHelperSprite;
 	
 	float dragTimer = 0f;
+	float replaceTimer = 0f;
 	float stabilizeTimer = 0f;
 	public Material DragMaterial;
 	
@@ -72,6 +75,20 @@ public class TurnManager : MonoBehaviour {
 	public static int round = 0;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+	// // // Built-in UNITY FUNCTIONS // // // //
+
 	// Use this for initialization
 	void Start () {
 		gameButton = GameObject.Find("Button");
@@ -82,19 +99,26 @@ public class TurnManager : MonoBehaviour {
 		} else {
 			towerCenter = tower.transform.position;
 		}
+		DragHelperSprite = GameObject.Find ("DragHelper");
+		ReplaceHelperSprite = GameObject.Find ("ReplaceHelper");
 		round = 0;
 
 		GetComponentInChildren<GameOverVisual>().DisableVisual();
+
+
+
+		// Sets the Criterion to disable selection of bottom row
+		float best = 999f;
+		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
+		foreach (GameObject o in blocks) {
+			if (o.transform.position.y < best)
+				best = o.transform.position.y;
+		}
+		Selectable.CriterionMinY (best + .001f);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
-
-
-
-
-		//lastPointer = Input.mousePosition;
 
 		
 		switch (phase) {
@@ -121,9 +145,6 @@ public class TurnManager : MonoBehaviour {
 		
 	}
 
-	public void GameOver() {
-		changePhase (TurnPhase.GameOver);
-	}
 	
 	void FixedUpdate() {
 		
@@ -152,9 +173,26 @@ public class TurnManager : MonoBehaviour {
 			                                       + Input.acceleration.y + ", "
 									               + Input.acceleration.z + ")"; */
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// // PHASE UPDATES // // //
+	// Phase updates are in sequential order except for GameOver, which can hapen at any time.
 	
-	
-	
+	// Phase for when the player is getting ready
 	void InitialPhaseUpdate() {
 		if (!hasStartedInitialUpdate) {
 			Selectable.Freeze ();
@@ -165,28 +203,31 @@ public class TurnManager : MonoBehaviour {
 		}
 
 		if (TouchInput.isTouchBegin ()) {
-			startPicking ();
+			gameText.GetComponent<TextMesh> ().text = "";
+			changePhase (TurnPhase.ChoosePiece);
 		}
 
 	}
 	
-	
+	// Update for when the player is choosing their piece.
+	// The camera can be controlled with swiping.
 	void ChoosePieceUpdate() {
 		if (!hasStartedChooseUpdate) {
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Pick Piece";
 			gameButton.SetActive(true);
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(FinalizePiece);
-			gameButton.GetComponent<Button>().onClick = buttonCallback;
-			if (Selectable.GetSelection()) {
-				Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
-				rig.useGravity = true;
-			}
+			updateButton (ButtonCallback_FinalizePiece, "Pick Piece!");
+
+
 			Selectable.Thaw ();
+			ResetSelected();
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedChooseUpdate = true;
 
-			Selectable.Deselect();
+
+			// disable selection of top 2 rows
+			updateTopInfo();
+			Selectable.CriterionMaxY(topPiecePos.y - .035f);
+
+
 			return;
 		}
 		
@@ -219,23 +260,20 @@ public class TurnManager : MonoBehaviour {
 		targetPos = offset + towerCenter + Quaternion.Euler (roll, pitch, yaw) * new Vector3 (0, 0, -radius);
 	}
 	
-	
+	// Update for when the player is dragging their piece from the tower
 	void DragPieceUpdate() {
 		GameObject piece = Selectable.GetSelection();
 		if (!hasStartedDragUpdate) {
 			selectedOriginalPosition = piece.transform.position;
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
 
-
-
 			hasStartedDragUpdate = true;
 			Selectable.Freeze ();
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Back";
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(UndoPiece);
-			gameButton.GetComponent<Button>().onClick = buttonCallback; 
+			updateButton(ButtonCallback_UndoPiece, "Back");
+
 			piece.GetComponent<Rigidbody>().useGravity = false;
 			piece.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+			DragHelperSprite.SetActive(true);
 			dragTimer = 0f;
 		}
 		dragTimer += Time.deltaTime;
@@ -244,15 +282,21 @@ public class TurnManager : MonoBehaviour {
 		targetPos = selectedOriginalPosition + 
 			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
 		transform.LookAt (selectedOriginalPosition);
-		
+
+		updateDragHelper ();
 		
 		if (dragTimer > 1.4f) {
 			var dir = piece.GetComponent<JengaBlockScript> ().direction;
 			if (!hasStartedDragging) {
 				//dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
+
+
+
 				dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 				                      Camera.main.WorldToScreenPoint(piece.transform.position).y);
 				piece.GetComponent<MeshRenderer>().material = DragMaterial;
+
+
 
 				if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
 					original_depth = piece.transform.position.z;
@@ -262,8 +306,6 @@ public class TurnManager : MonoBehaviour {
 				hasStartedDragging = true;
 			}
 
-
-			Debug.DrawLine(Vector3.zero, Camera.main.ScreenToWorldPoint(dragPos));
 
 
 
@@ -286,69 +328,52 @@ public class TurnManager : MonoBehaviour {
 	void ReplacePieceUpdate() {
 		if (!hasStartedReplaceUpdate) {
 			GameObject piece = Selectable.GetSelection();
-			//piece.GetComponent<Rigidbody>().useGravity = true;
 			transform.rotation = Quaternion.Euler (new Vector3 (roll, pitch, yaw));
 			hasStartedReplaceUpdate = true;
-			//piece.GetComponent<Rigidbody> ().freezeRotation = false;
 
 
 			// Get top of tower position
-			topPiecePos = Vector3.zero;;
-			float top = -999;
-			GameObject topPiece = null;
-			GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
-			foreach(GameObject o in pieces) {
-				if (o.transform.position.y > top) {
-					topPiece = o;
-					top = o.transform.position.y;
-				}
-			}
-			topPiecePos = topPiece.transform.position;
-			topPieceRotation = topPiece.transform.rotation.eulerAngles;
-			
-			// Get the number of pieces on highest layer
-			blocks_on_top = 0;
-			foreach(GameObject o in pieces) {
-				// If the tower is tilted, the adjacent blocks might not have
-				// exactly the same y value
-				var upper_bound = topPiecePos.y + 0.01;
-				var lower_bound = topPiecePos.y - 0.01;
-				if (o.transform.position.y > lower_bound && o.transform.position.y < upper_bound) {
-					++blocks_on_top;
-				}
-			}
+			updateTopInfo();
+
 			Debug.Log("There " + (blocks_on_top > 1 ? " are " : " is ") + blocks_on_top +
 					 (blocks_on_top > 1 ? " blocks on the top layer" : " block on the top layer "));
 
+
+
+
 			Vector3 pieceRot = selectedOriginalRotation;
-			targetPos = topPiece.transform.position +  new Vector3 (-.3f*radius, .6f*radius, -.3f*radius);
-			transform.LookAt (topPiece.transform.position);
-			selectedOriginalPosition = topPiece.transform.position;
+			targetPos = topPiecePos +  new Vector3 (-.5f*radius, .8f*radius, -.5f*radius);
+			transform.LookAt (topPiecePos);
+			selectedOriginalPosition = topPiecePos	;
 
+			updateButton(ButtonCallback_PlacedPiece, "Place!");
 
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "Place!";
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(PlacedPiece);
-			gameButton.GetComponent<Button>().onClick = buttonCallback; 
-
+			replaceTimer = 0f;
 
 
 		}
-
 		transform.LookAt (selectedOriginalPosition);
+		replaceTimer += Time.deltaTime;
+		if (replaceTimer < 1f)
+			return;
+		ReplaceHelperSprite.SetActive (true);
 
+
+
+		updateReplaceHelper ();
 		if (TouchInput.tap ()) {
 			dragPos += TouchInput.tapDelta();
-			
-			
+				
 			UserReplacePiece ();
 		} 
 	}
 
+	//Update for when the turn is coming to an end
+	// Delays starting for .5f seconds to get the stabilization checks a head start.
+	// Then, waits until the tower stops moving. Once it does stabilize, goes to the next turn
 	void TurnOverUpdate() {
 
 		if (!hasStartedTurnOver) {
-
 			targetPos = new Vector3(-.18f*radius, .8f*radius, -.18f*radius) +
 				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 
@@ -380,16 +405,13 @@ public class TurnManager : MonoBehaviour {
 		changePhase (TurnPhase.InitialPhase);
 	}
 
-
+	// Displays JENGA! visual and waits for player before returning to title screen.
 	void GameOverUpdate() {
 		if (!hasStartedGameOver) {
 
 			targetPos = new Vector3(-.4f*radius, .8f*radius, -.4f*radius) +
 				GameObject.FindGameObjectWithTag ("Tower").transform.position;
-			var buttonCallback = new Button.ButtonClickedEvent();
-			buttonCallback.AddListener(endGame);
-			gameButton.GetComponent<Button>().onClick = buttonCallback;
-			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = "OK";
+			updateButton(ButtonCallback_EndGame, "OK");
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
 		}
 
@@ -397,26 +419,72 @@ public class TurnManager : MonoBehaviour {
 
 	}
 
+
+
+
+
+
+
+
+
+
+	 // // CALLBACKS // // //
+
 	// Takes the currently selected piece and prepares it for movement.
-	public void FinalizePiece() {
+	public void ButtonCallback_FinalizePiece() {
 		changePhase(TurnPhase.DragPiece);
 		//Destroy(Selectable.GetSelection ());
 	}
 	
-	public void UndoPiece() {
+	public void ButtonCallback_UndoPiece() {
 		changePhase ( TurnPhase.ChoosePiece);
 	}
 
-	public void startPicking() {
-		gameText.GetComponent<TextMesh> ().text = "";
-		changePhase (TurnPhase.ChoosePiece);
-	}
 
-	public void PlacedPiece() {
+	public void ButtonCallback_PlacedPiece() {
 		changePhase (TurnPhase.TurnOver);
 	}
 
+	void ButtonCallback_EndGame() {
+		Application.LoadLevel ("MainMenu");
+	}
+	
 
+
+
+
+
+
+
+
+
+
+
+
+
+	// UTILITY FUNCTIONS
+
+	// Redraws the update, 2-arrow visual
+	void updateDragHelper() {
+		DragHelperSprite.transform.position = Selectable.GetSelection().transform.position + 
+			(DragHelperSprite.transform.rotation * new Vector3(0f, 0f, -.03f));
+		DragHelperSprite.transform.localScale = new Vector3 (
+			.01f*(1f + .3f *Mathf.Sin (3*dragTimer)), 
+			.01f*(1f + .3f *Mathf.Cos (3*dragTimer)), 1f);
+	}
+
+	// Redraws the update, 4-arrow visual
+	void updateReplaceHelper() {
+		ReplaceHelperSprite.transform.position = Selectable.GetSelection().transform.position + 
+			(new Vector3(0f, .01f, 0f));
+		//ReplaceHelperSprite.transform.rotation = 
+		ReplaceHelperSprite.transform.localScale = new Vector3 (
+			.02f*(1f + .3f *Mathf.Sin (3*replaceTimer)), 
+			.02f*(1f + .3f *Mathf.Cos (3*replaceTimer)), 1f);
+	}
+
+	// returns whether or not the tower is stabilized. When stable,
+	// the tower physics is sleeping and will not move. 
 	public bool isStablized() {
 		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
 		bool sleep = true;
@@ -430,6 +498,8 @@ public class TurnManager : MonoBehaviour {
 
 	}
 
+	// Resets the selected piece to be back to normal game mode,
+	// where physics is enabled and it is deselected
 	public void ResetSelected() {
 		if (Selectable.GetSelection()) {
 			Rigidbody rig = Selectable.GetSelection().GetComponent<Rigidbody>();
@@ -442,6 +512,7 @@ public class TurnManager : MonoBehaviour {
 		Selectable.Deselect();
 	}
 
+	// Changes the turn's phase.
 	void changePhase(TurnPhase p) {
 		hasStartedDragUpdate = false;
 		hasStartedChooseUpdate = false;
@@ -452,27 +523,71 @@ public class TurnManager : MonoBehaviour {
 		hasStartedInitialUpdate = false;
 		piece_has_teleported = false;
 
+		DragHelperSprite.SetActive (false);
+		ReplaceHelperSprite.SetActive (false);
 		gameButton.SetActive (true);
 
 		phase = p;
 	}
 
-	void endGame() {
-		Application.LoadLevel ("MainMenu");
+	// Sets the game button event function and displayed text.
+
+	void updateButton(UnityEngine.Events.UnityAction cb, string text) {
+		var buttonCallback = new Button.ButtonClickedEvent();
+		buttonCallback.AddListener(cb);
+		gameButton.GetComponent<Button>().onClick = buttonCallback;
+		gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = text;
+
+	}
+	// Public function to end the game.
+	public void GameOver() {
+		changePhase (TurnPhase.GameOver);
 	}
 
 
-
-
-
-
-
-
-
-
-
-
+	// sets the 
+	// topPiecePos 			(which contains the position of the highest piece)
+	// topPieceROtation 	(the rotation of the aforementioned piece)
+	// blocks_on_top		(the number of blcoks currently on the top of the tower);
+	void updateTopInfo() {
+		topPiecePos = Vector3.zero;;
+		float top = -999;
+		GameObject topPiece = null;
+		GameObject[] pieces = GameObject.FindGameObjectsWithTag("JengaBlock");
+		foreach(GameObject o in pieces) {
+			if (o.transform.position.y > top) {
+				topPiece = o;
+				top = o.transform.position.y;
+			}
+		}
+		topPiecePos = topPiece.transform.position;
+		topPieceRotation = topPiece.transform.rotation.eulerAngles;
+		
+		
+		
+		// Get the number of pieces on highest layer
+		blocks_on_top = 0;
+		foreach(GameObject o in pieces) {
+			// If the tower is tilted, the adjacent blocks might not have
+			// exactly the same y value
+			var upper_bound = topPiecePos.y + 0.01;
+			var lower_bound = topPiecePos.y - 0.01;
+			if (o.transform.position.y > lower_bound && o.transform.position.y < upper_bound) {
+				++blocks_on_top;
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	////// User updates
+	/// Here is the logic for functiosn that require mouse-to-world dragging of objects
 	
 	// put logic here for re placing the piece.
 	// need to initially on first call place the block properly

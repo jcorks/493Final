@@ -29,6 +29,24 @@ public class JengaBlockScript : MonoBehaviour {
 		}
 	}
 
+	public bool isMiddle() {
+		Ray right = new Ray ();
+		Ray left = new Ray ();
+
+
+		right.direction = (transform.rotation * new Vector3(1, 0f, 0));
+		right.origin = transform.position;
+
+		
+		left.direction = (transform.rotation * new Vector3(-1, 0f, 0));
+		left.origin = transform.position;
+
+		//Debug.DrawRay (left.origin, left.direction * .1f, Color.white, .1f, true);
+		//Debug.DrawRay (right.origin, right.direction * .1f, Color.white, .1f, true);
+
+		return (Physics.Raycast (right, 1) && Physics.Raycast (left, 1));
+	}
+
 	// Use this for initialization
 	void Start () {
 		
@@ -36,6 +54,6 @@ public class JengaBlockScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+
 	}
 }

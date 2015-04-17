@@ -15,7 +15,7 @@ public class TurnManager : MonoBehaviour {
 		
 	};
 
-	int numPlayers= 2;
+	int numPlayers;
 	int curPlayer = 0;
 
 	// The highest piece in the land
@@ -91,6 +91,7 @@ public class TurnManager : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		numPlayers = PlayerSelect.num_players;
 		gameButton = GameObject.Find("Button");
 		gameText = GameObject.FindObjectOfType<TextMesh> ().gameObject;
 		GameObject tower = GameObject.FindGameObjectWithTag ("Tower");

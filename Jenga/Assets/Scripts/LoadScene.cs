@@ -78,4 +78,17 @@ public class LoadScene : MonoBehaviour {
 			buttonSound.Play();
 		Application.Quit();
 	}
+	
+	public void loadClassicPlayerSelect(){
+		if (MusicController.soundEffectsEnabled)
+			buttonSound.Play();
+		Application.LoadLevel("ClassicPlayerSelect");
+	}
+	
+	public void loadHeavyBlockPlayerSelect(){
+		if (MusicController.soundEffectsEnabled)
+			buttonSound.Play();
+		Application.LoadLevel("HeavyBlockPlayerSelect");
+	}
+		
 }

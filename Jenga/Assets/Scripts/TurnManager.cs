@@ -76,7 +76,7 @@ public class TurnManager : MonoBehaviour {
 
 
 
-
+	bool was_middle;
 
 
 
@@ -280,14 +280,20 @@ public class TurnManager : MonoBehaviour {
 		dragTimer += Time.deltaTime;
 		
 		Vector3 pieceRot = selectedOriginalRotation;
-		targetPos = selectedOriginalPosition + 
-			Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f*radius);
+		var dir = piece.GetComponent<JengaBlockScript> ().direction;
+		if (was_middle && dir == JengaBlockScript.Direction.FacingEast){
+			targetPos = selectedOriginalPosition + 
+				Quaternion.Euler (pieceRot.x, pieceRot.y + 90, pieceRot.z) * new Vector3 (0, 0, -.6f * radius);
+		}
+		else
+			targetPos = selectedOriginalPosition + 
+				Quaternion.Euler (pieceRot.x, pieceRot.y - 90, pieceRot.z) * new Vector3 (0, 0, -.6f * radius);
 		transform.LookAt (selectedOriginalPosition);
 
 		updateDragHelper ();
 		
 		if (dragTimer > 1.4f) {
-			var dir = piece.GetComponent<JengaBlockScript> ().direction;
+			//var dir = piece.GetComponent<JengaBlockScript> ().direction;
 			if (!hasStartedDragging) {
 				//dragPos = Camera.main.WorldToScreenPoint(piece.transform.position);
 
@@ -310,19 +316,26 @@ public class TurnManager : MonoBehaviour {
 
 
 			if (TouchInput.tap ()) {
-					if (TouchInput.tapDelta() != Vector3.zero)
+				if (TouchInput.tapDelta() != Vector3.zero)
 						gameButton.SetActive(false);
-
-					if (dir == JengaBlockScript.Direction.FacingWest) {
-						dragPos -= TouchInput.tapDelta();
-					} else {
-					bool middle_piece = piece.GetComponent<JengaBlockScript>().isMiddle();
-						if (middle_piece) {
-							dragPos -= TouchInput.tapDelta();
-						} else {
-							dragPos += TouchInput.tapDelta();
-						}
-					}
+				if (was_middle && dir == JengaBlockScript.Direction.FacingEast){
+					Debug.Log("Buggy middle block");
+					dragPos -= 10*TouchInput.tapDelta();
+				}
+				else if (dir == JengaBlockScript.Direction.FacingEast) {
+					Debug.Log("Facing east");
+					dragPos += 4*TouchInput.tapDelta();
+				}
+				 else if (dir == JengaBlockScript.Direction.FacingWest) {
+					Debug.Log("Facing west");
+					dragPos -= 4*TouchInput.tapDelta();
+				} else if (dir == JengaBlockScript.Direction.FacingNorth){
+					Debug.Log ("Facing north");
+					dragPos += TouchInput.tapDelta();
+				} else if (dir == JengaBlockScript.Direction.FacingSouth){
+					Debug.Log ("Facing south");
+					dragPos += TouchInput.tapDelta();
+				}
 					UserDragPiece ();
 				}
 			} 
@@ -408,6 +421,7 @@ public class TurnManager : MonoBehaviour {
 			curPlayer = 0;
 		}
 		Debug.Log ("TURNS OVER NOW");
+		was_middle = false;
 		changePhase (TurnPhase.InitialPhase);
 	}
 
@@ -420,9 +434,7 @@ public class TurnManager : MonoBehaviour {
 			updateButton(ButtonCallback_EndGame, "OK");
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
 		}
-
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
-
 	}
 
 
@@ -438,6 +450,7 @@ public class TurnManager : MonoBehaviour {
 
 	// Takes the currently selected piece and prepares it for movement.
 	public void ButtonCallback_FinalizePiece() {
+		was_middle = Selectable.GetSelection ().gameObject.GetComponent<JengaBlockScript> ().isMiddle ();
 		changePhase(TurnPhase.DragPiece);
 		//Destroy(Selectable.GetSelection ());
 	}
@@ -660,6 +673,7 @@ public class TurnManager : MonoBehaviour {
 			pos.y = mousePos3D.y;
 			pos.z = original_depth;
 			piece.transform.position = pos;
+			Debug.Log ("facing: " + dir);
 		} else if (dir == JengaBlockScript.Direction.FacingEast || dir == JengaBlockScript.Direction.FacingWest) {
 			// Mouse never moves in the z direction, even though the camera changes angle
 			//var depth = piece.transform.position.x;
@@ -671,11 +685,22 @@ public class TurnManager : MonoBehaviour {
 			Vector3 mousePos3D = Camera.main.ScreenToWorldPoint (new Vector3(left_right, up_down, original_depth));
 			Vector3 pos = -(this.transform.position);
 			pos.x = original_depth;
-			pos.y = mousePos3D.y;
-			pos.z = mousePos3D.z;
-			piece.transform.position = pos;
+			/*if (piece.GetComponent<JengaBlockScript>().isMiddle ()) {
+				mousePos2D.z = original_depth; // fix the z coordinate when viewing this face
+				Vector3 mousePos3D_ = Camera.main.ScreenToWorldPoint (mousePos2D);
+				pos = this.transform.position;
+				pos.x = mousePos3D_.x;
+				pos.y = mousePos3D_.y;
+				pos.z = original_depth;
+				piece.transform.position = pos;
+			} else {*/
+				pos.y = mousePos3D.y;
+				pos.z = mousePos3D.z;
+				piece.transform.position = pos;
+			//}
+			Debug.Log ("facing: " + dir);
 
-			// Set pos.z to mouse position x?
+			// Thinks middle pieces that're facing south are actually facing east/west
 
 
 			//Debug.Log ("Mouse 3D position X: " + mousePos3D.x + " Y: " + mousePos3D.y + " Z: " + mousePos3D.z);

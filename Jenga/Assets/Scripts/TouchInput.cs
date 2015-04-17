@@ -39,7 +39,7 @@ public class TouchInput : MonoBehaviour {
 			Debug.Log ("It's an iPhone!");
 			ios_device = true;
 		} else {
-			Debug.Log ("It's Something Else!");
+			Debug.Log ("It's probably a computer!");
 			probably_a_computer = true;
 		}
 	}

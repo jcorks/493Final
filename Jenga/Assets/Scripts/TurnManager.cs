@@ -75,6 +75,20 @@ public class TurnManager : MonoBehaviour {
 	public static int round = 0;
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+	// // // Built-in UNITY FUNCTIONS // // // //
+
 	// Use this for initialization
 	void Start () {
 		gameButton = GameObject.Find("Button");
@@ -94,12 +108,6 @@ public class TurnManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-
-
-
-
-		//lastPointer = Input.mousePosition;
 
 		
 		switch (phase) {
@@ -126,9 +134,6 @@ public class TurnManager : MonoBehaviour {
 		
 	}
 
-	public void GameOver() {
-		changePhase (TurnPhase.GameOver);
-	}
 	
 	void FixedUpdate() {
 		
@@ -409,7 +414,7 @@ public class TurnManager : MonoBehaviour {
 		changePhase (TurnPhase.InitialPhase);
 	}
 
-	// Displays JENGA! visual and waits fro player before returning to title screen.
+	// Displays JENGA! visual and waits for player before returning to title screen.
 	void GameOverUpdate() {
 		if (!hasStartedGameOver) {
 
@@ -543,9 +548,10 @@ public class TurnManager : MonoBehaviour {
 		gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = text;
 
 	}
-	
-
-
+	// Public function to end the game.
+	public void GameOver() {
+		changePhase (TurnPhase.GameOver);
+	}
 
 
 

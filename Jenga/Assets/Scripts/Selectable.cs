@@ -12,8 +12,7 @@ public class Selectable : MonoBehaviour {
 	MeshRenderer meshRenderer = null;
 	static float maxY = 999f;
 	static float minY = -999f;
-
-
+	
 	// Selects the object and deselects anything else currently selected
 	public void Select() {
 		if (!enableSelection || transform.position.y > maxY || transform.position.y < minY)
@@ -76,9 +75,18 @@ public class Selectable : MonoBehaviour {
 	void Start() {
 		if (!meshRenderer)
 			Destroy (this.gameObject);
-
+		StartCoroutine(delayedSetup());
+	}
+	
+	IEnumerator delayedSetup(){
+		float i = 0;
+		while (i < 0.1f){
+			i += Time.deltaTime;
+			yield return 0;
+		}
 		actualMat = meshRenderer.material;
 	}
+		
 
 
 

@@ -8,6 +8,7 @@ public class Selectable : MonoBehaviour {
 	static GameObject selectedRef = null;
 	Material actualMat = null;
 	public Material selectedMat;
+	public Material transparentMat;
 	public static bool enableSelection = true;
 	MeshRenderer meshRenderer = null;
 	static float maxY = 999f;
@@ -20,7 +21,10 @@ public class Selectable : MonoBehaviour {
 		if (selectedRef) {
 			selectedRef.GetComponent<Selectable>().meshRenderer.material = 
 		    selectedRef.GetComponent<Selectable>().actualMat;
+		    restoreOpaquenessToAll();
 		}
+		if (gameObject.GetComponent<JengaBlockScript>().isMiddle())
+			makeOtherBlocksTransparent();
 		meshRenderer.material = selectedMat;
 		selectedRef = gameObject;
 	}
@@ -50,6 +54,7 @@ public class Selectable : MonoBehaviour {
 		if (selectedRef) {
 			selectedRef.GetComponent<Selectable>().meshRenderer.material = 
 			selectedRef.GetComponent<Selectable>().actualMat;
+			restoreOpaquenessToAll();
 		}
 		selectedRef = null;
 	}
@@ -86,9 +91,24 @@ public class Selectable : MonoBehaviour {
 		}
 		actualMat = meshRenderer.material;
 	}
-		
 
-
-
+	void makeOtherBlocksTransparent(){
+		GameObject tower = this.gameObject.transform.parent.gameObject;
+		foreach (Transform block_transform in tower.GetComponentsInChildren<Transform>()){
+			if (block_transform.gameObject != this.gameObject && block_transform.gameObject != tower){
+				block_transform.gameObject.GetComponent<Renderer>().material = transparentMat;
+			}
+		}
+	}
+	
+	static void restoreOpaquenessToAll(){
+		GameObject tower = GameObject.Find("Tower");
+		foreach (Transform block_transform in tower.GetComponentsInChildren<Transform>()){
+			if (block_transform.gameObject != tower){
+				block_transform.gameObject.GetComponent<Renderer>().material = 
+				block_transform.gameObject.GetComponent<Selectable>().actualMat;
+			}
+		}
+	}
 
 }

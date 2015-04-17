@@ -11,11 +11,12 @@ public class Selectable : MonoBehaviour {
 	public static bool enableSelection = true;
 	MeshRenderer meshRenderer = null;
 	static float maxY = 999f;
+	static float minY = -999f;
 
 
 	// Selects the object and deselects anything else currently selected
 	public void Select() {
-		if (!enableSelection || transform.position.y > maxY)
+		if (!enableSelection || transform.position.y > maxY || transform.position.y < minY)
 			return;
 		if (selectedRef) {
 			selectedRef.GetComponent<Selectable>().meshRenderer.material = 
@@ -54,8 +55,14 @@ public class Selectable : MonoBehaviour {
 		selectedRef = null;
 	}
 
-	public static void CriterionY(float f) {
+	// TO be selectable this object's y position must be below this value
+	public static void CriterionMaxY(float f) {
 		maxY = f;
+	}
+
+	// TO be selectable, this object's y position must be above this value
+	public static void CriterionMinY(float f) {
+		minY = f;
 	}
 
 

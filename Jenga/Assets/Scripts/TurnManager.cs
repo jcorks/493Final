@@ -104,6 +104,17 @@ public class TurnManager : MonoBehaviour {
 		round = 0;
 
 		GetComponentInChildren<GameOverVisual>().DisableVisual();
+
+
+
+		// Sets the Criterion to disable selection of bottom row
+		float best = 999f;
+		GameObject[] blocks = GameObject.FindGameObjectsWithTag ("JengaBlock");
+		foreach (GameObject o in blocks) {
+			if (o.transform.position.y < best)
+				best = o.transform.position.y;
+		}
+		Selectable.CriterionMinY (best + .001f);
 	}
 	
 	// Update is called once per frame
@@ -214,7 +225,7 @@ public class TurnManager : MonoBehaviour {
 
 			// disable selection of top 2 rows
 			updateTopInfo();
-			Selectable.CriterionY(topPiecePos.y - .025f);
+			Selectable.CriterionMaxY(topPiecePos.y - .035f);
 
 
 			return;

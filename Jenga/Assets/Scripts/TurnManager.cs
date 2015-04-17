@@ -14,9 +14,15 @@ public class TurnManager : MonoBehaviour {
 		GameOver
 		
 	};
-
+	public bool scoreAttackMode;
 	int numPlayers;
 	int curPlayer = 0;
+	
+	int turnScore_max = 1000;
+	int turnScore_min = 100;
+	public int turnScore;
+	public int totalScore = 0;
+	bool scoreDecrementing = false;
 
 	// The highest piece in the land
 	Vector3 topPiecePos;
@@ -148,6 +154,10 @@ public class TurnManager : MonoBehaviour {
 
 	
 	void FixedUpdate() {
+		if (scoreDecrementing){
+			turnScore = Mathf.Max(turnScore_min, turnScore-1);
+			print (turnScore);
+		}
 		
 		// First bind values to 0 - 360 to prevent false lerping
 		
@@ -196,6 +206,8 @@ public class TurnManager : MonoBehaviour {
 	// Phase for when the player is getting ready
 	void InitialPhaseUpdate() {
 		if (!hasStartedInitialUpdate) {
+			print (totalScore);
+			turnScore = turnScore_max;
 			Selectable.Freeze ();
 			gameText.GetComponent<TextMesh>().text = "Player " + (curPlayer+1) + "'s turn!";
 			gameButton.SetActive(false);
@@ -265,6 +277,7 @@ public class TurnManager : MonoBehaviour {
 	void DragPieceUpdate() {
 		GameObject piece = Selectable.GetSelection();
 		if (!hasStartedDragUpdate) {
+			scoreDecrementing = true;
 			selectedOriginalPosition = piece.transform.position;
 			selectedOriginalRotation = piece.transform.rotation.eulerAngles;
 
@@ -393,6 +406,8 @@ public class TurnManager : MonoBehaviour {
 	void TurnOverUpdate() {
 
 		if (!hasStartedTurnOver) {
+			scoreDecrementing = false;
+			totalScore += turnScore;
 			targetPos = new Vector3(-.18f*radius, .8f*radius, -.18f*radius) +
 				GameObject.FindGameObjectWithTag ("Tower").transform.position;
 
@@ -431,8 +446,14 @@ public class TurnManager : MonoBehaviour {
 
 			targetPos = new Vector3(-.4f*radius, .8f*radius, -.4f*radius) +
 				GameObject.FindGameObjectWithTag ("Tower").transform.position;
-			updateButton(ButtonCallback_EndGame, "OK");
 			GetComponentInChildren<GameOverVisual>().EnableVisual();
+			
+			if (scoreAttackMode){
+				Scoreholder.setScore(totalScore);
+				updateButton(ButtonCallback_EndGame_ScoreAttack, "OK");
+			}
+			else
+				updateButton(ButtonCallback_EndGame, "OK");
 		}
 		transform.LookAt (GameObject.FindGameObjectWithTag ("Tower").transform.position);
 	}
@@ -466,6 +487,10 @@ public class TurnManager : MonoBehaviour {
 
 	void ButtonCallback_EndGame() {
 		Application.LoadLevel ("MainMenu");
+	}
+	
+	void ButtonCallback_EndGame_ScoreAttack(){
+		Application.LoadLevel("HighscoreSave");
 	}
 	
 
@@ -555,7 +580,8 @@ public class TurnManager : MonoBehaviour {
 		var buttonCallback = new Button.ButtonClickedEvent();
 		buttonCallback.AddListener(cb);
 		gameButton.GetComponent<Button>().onClick = buttonCallback;
-		gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = text;
+		if (gameButton.GetComponent<Button>().GetComponentInChildren<Text>() != null)
+			gameButton.GetComponent<Button>().GetComponentInChildren<Text>().text = text;
 
 	}
 	// Public function to end the game.

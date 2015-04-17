@@ -11,6 +11,7 @@ public class AccelerometerInput : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		/*
 		Vector3 forceVector = Input.acceleration;
 		if (Mathf.Abs(forceVector.x) < movingThreshold)
 			forceVector.x = 0;
@@ -32,6 +33,6 @@ public class AccelerometerInput : MonoBehaviour {
 		}
 		if (Input.GetKey(KeyCode.L)){
 			this.gameObject.GetComponent<Rigidbody>().AddForce(forceValue,0,0,ForceMode.Acceleration);
-		}
+		}*/
 	}
 }

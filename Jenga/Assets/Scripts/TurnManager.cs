@@ -296,8 +296,7 @@ public class TurnManager : MonoBehaviour {
 				dragPos = new Vector2(Camera.main.WorldToScreenPoint(piece.transform.position).x,
 				                      Camera.main.WorldToScreenPoint(piece.transform.position).y);
 				piece.GetComponent<MeshRenderer>().material = DragMaterial;
-
-
+				// Drag middle piece works for East and West faces
 
 				if (dir == JengaBlockScript.Direction.FacingSouth || dir == JengaBlockScript.Direction.FacingNorth) {
 					original_depth = piece.transform.position.z;
@@ -314,10 +313,16 @@ public class TurnManager : MonoBehaviour {
 					if (TouchInput.tapDelta() != Vector3.zero)
 						gameButton.SetActive(false);
 
-					if (dir == JengaBlockScript.Direction.FacingWest)
+					if (dir == JengaBlockScript.Direction.FacingWest) {
 						dragPos -= TouchInput.tapDelta();
-					else 
-						dragPos += TouchInput.tapDelta();
+					} else {
+					bool middle_piece = piece.GetComponent<JengaBlockScript>().isMiddle();
+						if (middle_piece) {
+							dragPos -= TouchInput.tapDelta();
+						} else {
+							dragPos += TouchInput.tapDelta();
+						}
+					}
 					UserDragPiece ();
 				}
 			} 
